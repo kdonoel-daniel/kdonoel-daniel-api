@@ -12,7 +12,6 @@
  
     `http://localhost:3000/posts`
 
-### Using with older versions of node
-
 This project targets ES6. 
-You can target ES5, but you'll need to use es6-shim and install its typings.
+
+"C:\Program Files\MongoDB\Server\3.4\bin\mongod.exe" --dbpath "D:\BDD\mongodb"
