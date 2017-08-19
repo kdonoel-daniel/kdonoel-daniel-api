@@ -32,6 +32,7 @@
 		"@types/lodash": "^4.14.68",
 		"@types/mongodb": "^2.2.7",
 		"@types/winston": "^2.3.3",
+		"bcrypt": "^1.0.2",
 		"body-parser": "1.17.2",
 		"express": "4.15.3",
 		"glob-promise": "^3.1.0",

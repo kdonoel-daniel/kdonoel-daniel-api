@@ -7,8 +7,6 @@ import { Container } from 'typedi';
 // Load project conf & set as global
 import conf from './conf';
 import { Log } from './logs';
-import { CategoryController } from './modules/categories/CategoryController';
-import { PostController } from './modules/posts/PostController';
 
 global.conf = conf;
 global.log = new Log(conf.name);
@@ -28,10 +26,7 @@ const expressApp = createExpressServer({
 	 * We can add options about how routing-controllers should configure itself.
 	 * Here we specify what controllers should be registered in our express server.
 	 */
-	controllers: [
-		CategoryController,
-		PostController
-	]
+	controllers: [__dirname + '/modules/**/*.controller.?s'],
 });
 // @formatter:on
 
@@ -45,7 +40,7 @@ process.on('unhandledRejection', (err: any) => {
 	// Profile startup boot time
 	global.log.info('BEGIN startup');
 	// Connect to MongoDB
-	global.db = await Mongo.connect();
+	await Mongo.connect();
 	// Run modules init
 	const initFiles = await glob('**/*.init.+(ts|js)', {cwd: __dirname});
 	await initFiles.reduce(async (promiseChain: any, item: string) => {
