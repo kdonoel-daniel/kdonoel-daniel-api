@@ -1,7 +1,7 @@
 import { Collection, Db, FindOneOptions } from 'mongodb';
 import { Service } from 'typedi';
 
-import { oid } from '../../mongo';
+import { oid, setIdMongoToStringAsync, setIdMongoToStringSync } from '../../mongo';
 import { User } from './users.models';
 import { hashPassword } from './users.utils';
 
@@ -30,11 +30,11 @@ export class UsersService {
 	}
 
 	public async findOne(query: object, options?: FindOneOptions): Promise<User> {
-		return await this.users.findOne(query, options);
+		return await setIdMongoToStringAsync(this.users.findOne(query, options));
 	}
 
 	public async find(query: object): Promise<User[]> {
-		return await this.users.find(query).toArray();
+		return (await this.users.find(query).toArray()).map((e) => setIdMongoToStringSync(e));
 	}
 
 	public async updatebyId(userId: string, user: User): Promise<void> {

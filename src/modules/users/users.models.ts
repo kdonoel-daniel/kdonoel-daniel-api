@@ -1,9 +1,8 @@
-import { ObjectID } from 'bson';
 import { IsEmail, IsNotEmpty, Matches, MinLength } from 'class-validator';
 
 export class User {
-	public _id?: ObjectID;
-
+	public _id?: string;
+	public token?: string;
 	@IsEmail()
 	public email: string;
 
