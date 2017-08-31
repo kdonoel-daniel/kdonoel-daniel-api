@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { Body, Get, JsonController, Param, Post } from 'routing-controllers';
+import { Authorized, Body, Get, JsonController, Param, Post } from 'routing-controllers';
 import { Service } from 'typedi';
 import { ExtendableError } from '../../extendable-error';
 import { User } from './users.models';
@@ -30,6 +30,7 @@ export class UsersController {
 	 * </code></pre>
 	 */
 	@Post()
+	@Authorized()
 	public async createUser(@Body() userBody: User): Promise<User> {
 		// sanitize email to lowercase
 		userBody.email = userBody.email.toLowerCase();
@@ -61,6 +62,7 @@ export class UsersController {
 	 * </code></pre>
 	 */
 	@Get('/:id')
+	@Authorized()
 	public async getUserById(@Param('id') userId: string): Promise<User> {
 		// Check if user exists
 		const user = await this.usersService.getById(userId);
@@ -72,6 +74,7 @@ export class UsersController {
 	}
 
 	@Get()
+	@Authorized()
 	public async getUsers(): Promise<User[]> {
 		return this.usersService.find({});
 	}

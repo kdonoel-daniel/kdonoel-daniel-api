@@ -1,4 +1,4 @@
-# routing-controllers with express demo
+# user management with routing-controllers
 
 1. Install all dependencies:
 
@@ -10,8 +10,6 @@
 
 3. Open in browser:
  
-    `http://localhost:3000/posts`
+    `http://localhost:3000/`
 
 This project targets ES6. 
-
-"C:\Program Files\MongoDB\Server\3.4\bin\mongod.exe" --dbpath "D:\BDD\mongodb"

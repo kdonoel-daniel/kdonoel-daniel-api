@@ -29,3 +29,5 @@ $RECYCLE.BIN/
 
 # Optional npm cache directory
 .npm
+
+src/conf/local.ts

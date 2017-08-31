@@ -1,7 +1,9 @@
 import * as glob from 'glob-promise';
+import * as  jwt from 'jsonwebtoken';
 import { join } from 'path';
 import 'reflect-metadata';
-import { createExpressServer, useContainer } from 'routing-controllers';
+import { Action, createExpressServer, useContainer } from 'routing-controllers';
+import { User } from './modules/users/users.models';
 import { Container } from 'typedi';
 // @formatter:off
 // Load project conf & set as global
@@ -27,6 +29,16 @@ const expressApp = createExpressServer({
 	 * Here we specify what controllers should be registered in our express server.
 	 */
 	controllers: [__dirname + '/modules/**/*.controller.?s'],
+	authorizationChecker: async (action: Action, roles: string[]) => {
+		const token = action.request.headers['authorization'];
+
+		try {
+			const user = jwt.verify(token, global.conf.jwt.secret) as User;
+			return !!user;
+		} catch (e) {
+			return false;
+		}
+	}
 });
 // @formatter:on
 
