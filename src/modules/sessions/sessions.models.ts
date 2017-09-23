@@ -1,4 +1,5 @@
 import { IsEmail, Matches, MinLength } from 'class-validator';
+import { User } from '../users/users.models';
 
 export class CreateSessionBody {
 
@@ -11,6 +12,11 @@ export class CreateSessionBody {
 }
 
 export interface Session {
+	token: string;
+	profile: User;
+}
+
+export interface TokenDetails {
 	_id: string;
 	email: string;
 	firstName: string;
