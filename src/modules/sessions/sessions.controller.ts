@@ -9,7 +9,7 @@ import { CreateSessionBody } from './sessions.models';
 import { SessionsService } from './sessions.service';
 
 @Service()
-@JsonController('/users')
+@JsonController('/sessions')
 export class UsersController {
 
 	constructor(
