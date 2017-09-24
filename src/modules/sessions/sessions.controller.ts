@@ -5,7 +5,7 @@ import { User } from '../users/users.models';
 
 import { UsersService } from '../users/users.service';
 import * as UsersUtils from '../users/users.utils';
-import { CreateSessionBody } from './sessions.models';
+import { CreateSessionBody, Session } from './sessions.models';
 import { SessionsService } from './sessions.service';
 
 @Service()
@@ -34,7 +34,7 @@ export class UsersController {
 	 * </code></pre>
 	 */
 	@Post()
-	public async createSession(@Body() createSessionBody: CreateSessionBody): Promise<User> {
+	public async createSession(@Body() createSessionBody: CreateSessionBody): Promise<Session> {
 		const email = createSessionBody.email;
 		const password = createSessionBody.password;
 

@@ -1,4 +1,5 @@
 import { IsEmail, IsNotEmpty, Matches, MinLength } from 'class-validator';
+import { Kdo } from './kdos.models';
 
 export class User {
 	public _id?: string;
@@ -25,4 +26,6 @@ export class User {
 	public lastSessionAt?: Date;
 
 	public accessToken?: string;
+
+	public kdos?: Kdo[];
 }

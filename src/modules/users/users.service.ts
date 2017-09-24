@@ -33,8 +33,8 @@ export class UsersService {
 		return await setIdMongoToStringAsync(this.users.findOne(query, options));
 	}
 
-	public async find(query: object): Promise<User[]> {
-		return (await this.users.find(query).toArray()).map((e) => setIdMongoToStringSync(e));
+	public async find(query: object, projection: object = {}): Promise<User[]> {
+		return (await this.users.find(query).project(projection).toArray()).map((e) => setIdMongoToStringSync(e));
 	}
 
 	public async updatebyId(userId: string, user: User): Promise<void> {

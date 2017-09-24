@@ -76,6 +76,6 @@ export class UsersController {
 	@Get()
 	@Authorized()
 	public async getUsers(): Promise<User[]> {
-		return this.usersService.find({});
+		return this.usersService.find({}, { password: 0, kdos: 0});
 	}
 }
