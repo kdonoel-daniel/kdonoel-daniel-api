@@ -1,7 +1,8 @@
 import * as _ from 'lodash';
-import { Authorized, Body, Get, JsonController, Param, Post } from 'routing-controllers';
+import { Authorized, Body, CurrentUser, Get, JsonController, OnUndefined, Param, Post } from 'routing-controllers';
 import { Service } from 'typedi';
 import { ExtendableError } from '../../extendable-error';
+import { Kdo } from './kdos.models';
 import { User } from './users.models';
 
 import { UsersService } from './users.service';
@@ -76,6 +77,14 @@ export class UsersController {
 	@Get()
 	@Authorized()
 	public async getUsers(): Promise<User[]> {
-		return this.usersService.find({}, { password: 0, kdos: 0});
+		return this.usersService.find({}, {password: 0, kdos: 0});
+	}
+
+	@Post('/kdo')
+	@Authorized()
+	@OnUndefined(204)
+	public async addKdo(@CurrentUser({required: true}) user: User, @Body() kdo: Kdo) {
+		await this.usersService.addKdo(kdo, user._id);
+		return this.usersService.getById(user._id);
 	}
 }

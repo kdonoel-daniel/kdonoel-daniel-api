@@ -38,6 +38,10 @@ const expressApp = createExpressServer({
 		} catch (e) {
 			return false;
 		}
+	},
+	currentUserChecker: (action) => {
+		const token = action.request.headers['authorization'];
+		return jwt.verify(token, global.conf.jwt.secret) as User;
 	}
 });
 // @formatter:on

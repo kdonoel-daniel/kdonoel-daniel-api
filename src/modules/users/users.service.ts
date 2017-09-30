@@ -2,6 +2,7 @@ import { Collection, Db, FindOneOptions } from 'mongodb';
 import { Service } from 'typedi';
 
 import { oid, setIdMongoToStringAsync, setIdMongoToStringSync } from '../../mongo';
+import { Kdo } from './kdos.models';
 import { User } from './users.models';
 import { hashPassword } from './users.utils';
 
@@ -46,5 +47,15 @@ export class UsersService {
 			{$set: user},
 			{returnOriginal: false}
 		);
+	}
+
+	public async addKdo(kdo: Kdo, userId: string): Promise<void> {
+		await this.users.updateOne({
+			_id: oid(userId)
+		}, {
+			$push: {
+				kdos: kdo
+			}
+		});
 	}
 }
