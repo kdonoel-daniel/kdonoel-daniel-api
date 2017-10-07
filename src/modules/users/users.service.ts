@@ -58,4 +58,16 @@ export class UsersService {
 			}
 		});
 	}
+
+	public async editKdo(kdo: Kdo, userId: string, index: number): Promise<void> {
+		const set = {};
+		set['kdos.' + index] = kdo;
+
+		// TODO: fill historic
+		await this.users.updateOne({
+			_id: oid(userId)
+		}, {
+			$set: set
+		});
+	}
 }
