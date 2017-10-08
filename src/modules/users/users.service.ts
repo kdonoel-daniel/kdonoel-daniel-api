@@ -1,7 +1,9 @@
+import * as _ from 'lodash';
 import { Collection, Db, FindOneOptions } from 'mongodb';
 import { Service } from 'typedi';
 
 import { oid, setIdMongoToStringAsync, setIdMongoToStringSync } from '../../mongo';
+import { ObjectUtilsService } from '../utils/object-utils.service';
 import { Kdo } from './kdos.models';
 import { User } from './users.models';
 import { hashPassword } from './users.utils';
@@ -10,6 +12,9 @@ import { hashPassword } from './users.utils';
 export class UsersService {
 	private db: Db = global.db;
 	private users: Collection = this.db.collection('users');
+
+	constructor(private objectUtilsService: ObjectUtilsService) {
+	}
 
 	public async create(user: User): Promise<User> {
 		// Hash password
@@ -50,24 +55,48 @@ export class UsersService {
 	}
 
 	public async addKdo(kdo: Kdo, userId: string): Promise<void> {
+		kdo = this.objectUtilsService.removeEmpty(kdo) as Kdo;
+		const existingUser = await this.getById(userId);
+
+		const newUser = _.cloneDeep(existingUser);
+		newUser.kdos.push(kdo);
+		const diff = this.objectUtilsService.getRightDiffs(existingUser, newUser);
+
 		await this.users.updateOne({
 			_id: oid(userId)
 		}, {
 			$push: {
-				kdos: kdo
+				kdos: kdo,
+				historic: {
+					updatedAt: new Date(),
+					idUser: oid(userId),
+					type: 'create-kdo',
+					dataEdited: diff
+				}
 			}
 		});
 	}
 
 	public async editKdo(kdo: Kdo, userId: string, index: number): Promise<void> {
+		kdo = this.objectUtilsService.removeEmpty(kdo) as Kdo;
 		const set = {};
 		set['kdos.' + index] = kdo;
 
-		// TODO: fill historic
+		const existingUser = await this.getById(userId);
+		const diff = this.objectUtilsService.getRightDiffs(existingUser.kdos[index], kdo);
+
 		await this.users.updateOne({
 			_id: oid(userId)
 		}, {
-			$set: set
+			$set: set,
+			$push: {
+				historic: {
+					updatedAt: new Date(),
+					idUser: oid(userId),
+					type: 'edit-kdo',
+					dataEdited: diff
+				}
+			}
 		});
 	}
 }

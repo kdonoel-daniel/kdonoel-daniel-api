@@ -9,7 +9,7 @@ export const connect = async () => {
 	log.info(`Connected`);
 };
 
-export const oid = (id: string) => new ObjectID(id);
+export const oid = (id: string) => id ? new ObjectID(id) : id;
 
 export async function setIdMongoToStringAsync<T extends { _id: ObjectID | string }>(promise: Promise<T>): Promise<T> {
 	const object = await promise;

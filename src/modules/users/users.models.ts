@@ -1,4 +1,5 @@
 import { IsEmail, IsNotEmpty, Matches, MinLength } from 'class-validator';
+import { HistoricUser } from './historic-user.models';
 import { Kdo } from './kdos.models';
 
 export class User {
@@ -28,4 +29,6 @@ export class User {
 	public accessToken?: string;
 
 	public kdos?: Kdo[];
+
+	public historic?: HistoricUser[];
 }
