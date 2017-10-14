@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { Collection, Db, FindOneOptions } from 'mongodb';
+import { Collection, Db } from 'mongodb';
 import { Service } from 'typedi';
 
 import { oid, setIdMongoToStringAsync, setIdMongoToStringSync } from '../../mongo';
@@ -27,16 +27,21 @@ export class UsersService {
 		return user;
 	}
 
-	public async getById(userId: string): Promise<User> {
-		return await this.findOne({_id: oid(userId)});
+	public async getById(userId: string, projection?: object): Promise<User> {
+		return await this.findOne({_id: oid(userId)}, projection);
 	}
 
-	public async getByEmail(email: string): Promise<User> {
-		return await this.findOne({email});
+	public async getByEmail(email: string, projection?: object): Promise<User> {
+		return await this.findOne({email}, projection);
 	}
 
-	public async findOne(query: object, options?: FindOneOptions): Promise<User> {
-		return await setIdMongoToStringAsync(this.users.findOne(query, options));
+	public async findOne(query: object, projection?: object): Promise<User> {
+		if (!projection) {
+			projection = {};
+		}
+		return await setIdMongoToStringAsync(this.users.findOne(query, {
+			fields: projection
+		}));
 	}
 
 	public async find(query: object, projection: object = {}): Promise<User[]> {

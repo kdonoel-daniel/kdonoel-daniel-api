@@ -66,7 +66,9 @@ export class UsersController {
 	@Authorized()
 	public async getUserById(@Param('id') userId: string): Promise<User> {
 		// Check if user exists
-		const user = await this.usersService.getById(userId);
+		const user = await this.usersService.getById(userId, {
+			historic: 0
+		});
 		if (!user) {
 			throw new ExtendableError('user-not-found', 404);
 		}
@@ -77,7 +79,7 @@ export class UsersController {
 	@Get()
 	@Authorized()
 	public async getUsers(): Promise<User[]> {
-		return this.usersService.find({}, {password: 0, kdos: 0});
+		return this.usersService.find({}, {password: 0, kdos: 0, historic: 0});
 	}
 
 	@Post('/kdo')
