@@ -32,3 +32,7 @@ export class User {
 
 	public historic?: HistoricUser[];
 }
+
+export class UsersKdosCounted extends User {
+	public kdosCount?: number;
+}

@@ -44,6 +44,10 @@
 			true,
 			"always"
 		],
+		"max-classes-per-file": [
+			true,
+			5
+		],
 		"max-line-length": [
 			true,
 			200
@@ -59,7 +63,7 @@
 			"allow-null-check"
 		],
 		"quotemark": [
-			true
+			false
 		],
 		"variable-name": [
 			true,

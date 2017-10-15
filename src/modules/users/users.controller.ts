@@ -1,9 +1,21 @@
 import * as _ from 'lodash';
-import { Authorized, Body, CurrentUser, Get, JsonController, OnUndefined, Param, Post, Put } from 'routing-controllers';
+import {
+	Authorized,
+	Body,
+	CurrentUser,
+	Get,
+	JsonController,
+	OnUndefined,
+	Param,
+	Post,
+	Put,
+	UnauthorizedError
+} from 'routing-controllers';
 import { Service } from 'typedi';
 import { ExtendableError } from '../../extendable-error';
+import { StatusRequest } from './kdos-status-request.models';
 import { Kdo } from './kdos.models';
-import { User } from './users.models';
+import { User, UsersKdosCounted } from './users.models';
 
 import { UsersService } from './users.service';
 
@@ -50,6 +62,7 @@ export class UsersController {
 	 * Get a user by its ID
 	 *
 	 * @param userId ID Mongo
+	 * @param user session User
 	 * @returns {Promise<User>}
 	 * Sample :
 	 * <pre><code>
@@ -64,22 +77,29 @@ export class UsersController {
 	 */
 	@Get('/:id')
 	@Authorized()
-	public async getUserById(@Param('id') userId: string): Promise<User> {
+	public async getUserById(@CurrentUser({required: true}) user: User, @Param('id') userId: string): Promise<User> {
 		// Check if user exists
-		const user = await this.usersService.getById(userId, {
+		const userRequested = await this.usersService.getById(userId, user._id, {
 			historic: 0
 		});
-		if (!user) {
+		if (!userRequested) {
 			throw new ExtendableError('user-not-found', 404);
 		}
 		// Send back the user
-		return _.omit(user, 'password') as any;
+		return _.omit(userRequested, 'password') as any;
 	}
 
 	@Get()
 	@Authorized()
 	public async getUsers(): Promise<User[]> {
-		return this.usersService.find({}, {password: 0, kdos: 0, historic: 0});
+		const users: UsersKdosCounted[] = await this.usersService.find({}, {password: 0, historic: 0});
+
+		users.forEach((u) => {
+			u.kdosCount = u.kdos ? u.kdos.length : 0;
+			delete u.kdos;
+		});
+
+		return users;
 	}
 
 	@Post('/kdo')
@@ -87,7 +107,7 @@ export class UsersController {
 	@OnUndefined(204)
 	public async addKdo(@CurrentUser({required: true}) user: User, @Body() kdo: Kdo) {
 		await this.usersService.addKdo(kdo, user._id);
-		return this.usersService.getById(user._id);
+		return this.usersService.getById(user._id, user._id);
 	}
 
 	@Put('/kdo/:index')
@@ -95,6 +115,21 @@ export class UsersController {
 	@OnUndefined(204)
 	public async editKdo(@CurrentUser({required: true}) user: User, @Body() kdo: Kdo, @Param('index') index: number) {
 		await this.usersService.editKdo(kdo, user._id, index);
-		return this.usersService.getById(user._id);
+		return this.usersService.getById(user._id, user._id);
+	}
+
+	@Put('/:userId/kdo/:index/status')
+	@Authorized()
+	@OnUndefined(204)
+	public async setKdoStatus(
+		@CurrentUser({required: true}) user: User,
+		@Param('userId') userId: string,
+		@Param('index') index: number,
+		@Body() status: StatusRequest) {
+		if (userId === user._id) {
+			throw new UnauthorizedError('user-not-valid');
+		}
+		await this.usersService.setKdoStatus(userId, index, status);
+		return this.usersService.getById(userId, user._id);
 	}
 }

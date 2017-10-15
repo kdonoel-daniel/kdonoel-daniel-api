@@ -4,6 +4,7 @@ import { Service } from 'typedi';
 
 import { oid, setIdMongoToStringAsync, setIdMongoToStringSync } from '../../mongo';
 import { ObjectUtilsService } from '../utils/object-utils.service';
+import { StatusRequest } from './kdos-status-request.models';
 import { Kdo } from './kdos.models';
 import { User } from './users.models';
 import { hashPassword } from './users.utils';
@@ -27,7 +28,15 @@ export class UsersService {
 		return user;
 	}
 
-	public async getById(userId: string, projection?: object): Promise<User> {
+	public async getById(userId: string, userIdFor: string, projection?: object): Promise<User> {
+		if (userId === userIdFor) {
+			if (!projection) {
+				projection = {};
+			}
+			projection = Object.assign(projection, {
+				'kdos.status': 0
+			});
+		}
 		return await this.findOne({_id: oid(userId)}, projection);
 	}
 
@@ -61,9 +70,12 @@ export class UsersService {
 
 	public async addKdo(kdo: Kdo, userId: string): Promise<void> {
 		kdo = this.objectUtilsService.removeEmpty(kdo) as Kdo;
-		const existingUser = await this.getById(userId);
+		const existingUser = await this.getById(userId, null);
 
 		const newUser = _.cloneDeep(existingUser);
+		if (!newUser.kdos) {
+			newUser.kdos = [];
+		}
 		newUser.kdos.push(kdo);
 		const diff = this.objectUtilsService.getRightDiffs(existingUser, newUser);
 
@@ -85,9 +97,11 @@ export class UsersService {
 	public async editKdo(kdo: Kdo, userId: string, index: number): Promise<void> {
 		kdo = this.objectUtilsService.removeEmpty(kdo) as Kdo;
 		const set = {};
-		set['kdos.' + index] = kdo;
 
-		const existingUser = await this.getById(userId);
+		const existingUser = await this.getById(userId, null);
+
+		set['kdos.' + index] = Object.assign({}, existingUser.kdos[index], kdo);
+
 		const diff = this.objectUtilsService.getRightDiffs(existingUser.kdos[index], kdo);
 
 		await this.users.updateOne({
@@ -99,6 +113,31 @@ export class UsersService {
 					updatedAt: new Date(),
 					idUser: oid(userId),
 					type: 'edit-kdo',
+					dataEdited: diff
+				}
+			}
+		});
+	}
+
+	public async setKdoStatus(userId: string, index: number, status: StatusRequest): Promise<void> {
+		const set = {};
+		const existingUser = await this.getById(userId, null);
+
+		const newKdo = _.cloneDeep(existingUser.kdos[index]);
+		newKdo.status = status.status;
+		set['kdos.' + index] = newKdo;
+
+		const diff = this.objectUtilsService.getRightDiffs(existingUser.kdos[index], newKdo);
+
+		await this.users.updateOne({
+			_id: oid(userId)
+		}, {
+			$set: set,
+			$push: {
+				historic: {
+					updatedAt: new Date(),
+					idUser: oid(userId),
+					type: 'edit-kdo-status',
 					dataEdited: diff
 				}
 			}
