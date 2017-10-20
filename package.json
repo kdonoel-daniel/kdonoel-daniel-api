@@ -1,12 +1,13 @@
 {
-	"name": "routing-controllers-express-demo",
+	"name": "kdos-daniel-api",
 	"private": true,
 	"version": "0.0.1",
-	"description": "Example of express + typescript project using routing-controllers",
+	"description": "Kdos api for kdos daniel web app",
 	"license": "MIT",
 	"scripts": {
 		"dev": "nodemon --exec ts-node -- src/index.ts",
-		"build": "rimraf dist/ && tsc && copyfiles package.json dist/",
+		"build": "rimraf dist/ && tsc && copyfiles -a package.json \"./node_modules/**\" dist/",
+		"package": "npm run build && tar cf build/%npm_package_name%-v%npm_package_version%.tar dist/*",
 		"start": "node dist/src/",
 		"tslint": "tslint --project tsconfig.json --type-check --format msbuild 'src/*.ts' 'src/**/*.ts'  'src/**/**/*.ts'  'src/**/**/**/*.ts'  'src/**/**/**/**/*.ts'   'src/**/**/**/**/**/*.ts' || true",
 		"lint": "npm run tslint"
@@ -27,6 +28,7 @@
 	],
 	"tags": [
 		"express",
+		"yarn",
 		"typescript-express",
 		"routing-controllers"
 	],
