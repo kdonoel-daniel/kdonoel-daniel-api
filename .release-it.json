@@ -30,7 +30,7 @@
 		"releaseName": "V%s",
 		"preRelease": false,
 		"draft": false,
-		"tokenRef": "",
+		"tokenRef": "GITHUB_TOKEN",
 		"assets": "build/*.tar"
 	},
 	"dist": {
