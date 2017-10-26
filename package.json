@@ -11,8 +11,8 @@
 		"start": "node dist/src/",
 		"tslint": "tslint --project tsconfig.json --type-check --format msbuild 'src/*.ts' 'src/**/*.ts'  'src/**/**/*.ts'  'src/**/**/**/*.ts'  'src/**/**/**/**/*.ts'   'src/**/**/**/**/**/*.ts' || true",
 		"lint": "npm run tslint",
-		"release": "export BABEL_DISABLE_CACHE=1 && export GITHUB_TOKEN=$(cat /opt/secret/GITHUB_TOKEN.txt) && release-it",
-		"release-dry": "export BABEL_DISABLE_CACHE=1 && export GITHUB_TOKEN=$(cat /opt/secret/GITHUB_TOKEN.txt) && release-it --dry-run=true",
+		"release": "export BABEL_DISABLE_CACHE=1 && release-it --github.tokenRef='$(cat /opt/secret/GITHUB_TOKEN.txt)'",
+		"release-dry": "export BABEL_DISABLE_CACHE=1 && release-it --dry-run=true --github.tokenRef='$(cat /opt/secret/GITHUB_TOKEN.txt)'",
 		"build-changelog": "conventional-changelog -i CHANGELOG.md -s"
 	},
 	"licenses": [

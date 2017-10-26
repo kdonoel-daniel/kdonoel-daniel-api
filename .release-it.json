@@ -30,7 +30,7 @@
 		"releaseName": "V%s",
 		"preRelease": false,
 		"draft": false,
-		"tokenRef": null,
+		"tokenRef": "",
 		"assets": "build/*.tar"
 	},
 	"dist": {
