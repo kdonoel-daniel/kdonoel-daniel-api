@@ -7,10 +7,13 @@
 	"scripts": {
 		"dev": "nodemon --exec ts-node -- src/index.ts",
 		"build": "rimraf dist/ && tsc && copyfiles -a package.json \"./node_modules/**\" dist/",
-		"package": "npm run build && tar cf build/%npm_package_name%-v%npm_package_version%.tar dist/*",
+		"package": "npm run build && tar cf build/$npm_package_name-v$npm_package_version.tar dist/*",
 		"start": "node dist/src/",
 		"tslint": "tslint --project tsconfig.json --type-check --format msbuild 'src/*.ts' 'src/**/*.ts'  'src/**/**/*.ts'  'src/**/**/**/*.ts'  'src/**/**/**/**/*.ts'   'src/**/**/**/**/**/*.ts' || true",
-		"lint": "npm run tslint"
+		"lint": "npm run tslint",
+		"release": "export BABEL_DISABLE_CACHE=1 && export GITHUB_TOKEN=$(cat /opt/secret/GITHUB_TOKEN.txt) && release-it",
+		"release-dry": "export BABEL_DISABLE_CACHE=1 && export GITHUB_TOKEN=$(cat /opt/secret/GITHUB_TOKEN.txt) && release-it --dry-run=true",
+		"build-changelog": "conventional-changelog -i CHANGELOG.md -s"
 	},
 	"licenses": [
 		{
@@ -44,6 +47,7 @@
 		"@types/winston": "^2.3.3",
 		"bcrypt": "^1.0.2",
 		"body-parser": "1.17.2",
+		"conventional-changelog": "^1.1.6",
 		"deep-diff": "^0.3.8",
 		"express": "4.15.3",
 		"glob-promise": "^3.1.0",
@@ -52,6 +56,7 @@
 		"mongodb": "^2.2.30",
 		"multer": "1.3.0",
 		"reflect-metadata": "0.1.10",
+		"release-it": "^3.1.2",
 		"routing-controllers": "0.7.0",
 		"ts-node": "^3.2.0",
 		"typedi": "0.5.2",
