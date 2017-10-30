@@ -8,7 +8,7 @@
 	],
 	"increment": "patch",
 	"preReleaseId": null,
-	"buildCommand": false,
+	"buildCommand": "npm run package",
 	"changelogCommand": "npm run build-changelog",
 	"requireCleanWorkingDir": false,
 	"src": {

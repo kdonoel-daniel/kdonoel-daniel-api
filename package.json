@@ -13,7 +13,8 @@
 		"lint": "npm run tslint",
 		"release": "export BABEL_DISABLE_CACHE=1 && export GITHUB_TOKEN=$(cat /opt/secret/GITHUB_TOKEN.txt) && release-it",
 		"release-dry": "export BABEL_DISABLE_CACHE=1 && export GITHUB_TOKEN=$(cat /opt/secret/GITHUB_TOKEN.txt) && release-it --dry-run=true",
-		"build-changelog": "conventional-changelog -i CHANGELOG.md -s"
+		"build-changelog": "conventional-changelog -i CHANGELOG.md -s",
+		"post-release": "echo 'post-release'"
 	},
 	"licenses": [
 		{
