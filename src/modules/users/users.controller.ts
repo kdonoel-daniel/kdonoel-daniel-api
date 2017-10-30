@@ -13,9 +13,10 @@ import {
 } from 'routing-controllers';
 import { Service } from 'typedi';
 import { ExtendableError } from '../../extendable-error';
+import * as UsersUtils from '../users/users.utils';
 import { StatusRequest } from './kdos-status-request.models';
 import { Kdo } from './kdos.models';
-import { User, UsersKdosCounted } from './users.models';
+import { ResetPassword, User, UsersKdosCounted } from './users.models';
 
 import { UsersService } from './users.service';
 
@@ -100,6 +101,21 @@ export class UsersController {
 		});
 
 		return users;
+	}
+
+	@Post('/reset/password')
+	@Authorized()
+	@OnUndefined(204)
+	public async resetPassword(
+		@CurrentUser({required: true}) user: User,
+		@Body() rstPwd: ResetPassword): Promise<void> {
+		const fullUser = await this.usersService.getById(user._id, null);
+		const match = await UsersUtils.verifyPassword(fullUser.password, rstPwd.oldPassword);
+		if (!match) throw new ExtendableError('invalid-credentials', 401);
+
+		await this.usersService.setPassword(user._id, rstPwd.newPassword);
+
+		return;
 	}
 
 	@Post('/kdo')

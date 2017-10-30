@@ -68,6 +68,13 @@ export class UsersService {
 		);
 	}
 
+	public async setPassword(userId: string, pwd: string): Promise<void> {
+		const user = await this.getById(userId, null);
+		user.password = await hashPassword(pwd);
+		delete user._id;
+		await this.updatebyId(userId, user);
+	}
+
 	public async addKdo(kdo: Kdo, userId: string): Promise<void> {
 		kdo = this.objectUtilsService.removeEmpty(kdo) as Kdo;
 		const existingUser = await this.getById(userId, null);

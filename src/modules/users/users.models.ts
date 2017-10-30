@@ -36,3 +36,8 @@ export class User {
 export class UsersKdosCounted extends User {
 	public kdosCount?: number;
 }
+
+export class ResetPassword {
+	public oldPassword: string;
+	public newPassword: string;
+}
