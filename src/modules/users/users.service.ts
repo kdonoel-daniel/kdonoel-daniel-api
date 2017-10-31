@@ -54,7 +54,9 @@ export class UsersService {
 	}
 
 	public async find(query: object, projection: object = {}): Promise<User[]> {
-		return (await this.users.find(query).project(projection).toArray()).map((e) => setIdMongoToStringSync(e));
+		return (await this.users.find(query).project(projection).sort({
+			firstName: 1	
+		}).toArray()).map((e) => setIdMongoToStringSync(e));
 	}
 
 	public async updatebyId(userId: string, user: User): Promise<void> {
