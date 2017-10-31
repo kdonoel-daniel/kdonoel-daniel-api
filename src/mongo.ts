@@ -13,7 +13,7 @@ export const oid = (id: string) => id ? new ObjectID(id) : id;
 
 export async function setIdMongoToStringAsync<T extends { _id: ObjectID | string }>(promise: Promise<T>): Promise<T> {
 	const object = await promise;
-	if (object._id) {
+	if (object && object._id) {
 		if (typeof object._id !== 'string') {
 			object._id = object._id.toHexString();
 		}
@@ -22,7 +22,7 @@ export async function setIdMongoToStringAsync<T extends { _id: ObjectID | string
 }
 
 export function setIdMongoToStringSync<T extends { _id: ObjectID | string }>(object: T): T {
-	if (object._id) {
+	if (object && object._id) {
 		if (typeof object._id !== 'string') {
 			object._id = object._id.toHexString();
 		}
