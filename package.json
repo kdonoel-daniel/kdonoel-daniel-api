@@ -1,7 +1,7 @@
 {
 	"name": "kdos-daniel-api",
 	"private": true,
-	"version": "0.0.7",
+	"version": "0.1.0",
 	"description": "Kdos api for kdos daniel web app",
 	"license": "MIT",
 	"scripts": {
