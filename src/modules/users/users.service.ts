@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
 import { Collection, Db } from 'mongodb';
 import { Service } from 'typedi';
+import { ExtendableError } from '../../extendable-error';
 
 import { oid, setIdMongoToStringAsync, setIdMongoToStringSync } from '../../mongo';
 import { ObjectUtilsService } from '../utils/object-utils.service';
@@ -55,7 +56,7 @@ export class UsersService {
 
 	public async find(query: object, projection: object = {}): Promise<User[]> {
 		return (await this.users.find(query).project(projection).sort({
-			firstName: 1	
+			firstName: 1
 		}).toArray()).map((e) => setIdMongoToStringSync(e));
 	}
 
@@ -77,9 +78,13 @@ export class UsersService {
 		await this.updatebyId(userId, user);
 	}
 
-	public async addKdo(kdo: Kdo, userId: string): Promise<void> {
+	public async addKdo(kdo: Kdo, userId: string, userIdEditing: string = userId): Promise<void> {
 		kdo = this.objectUtilsService.removeEmpty(kdo) as Kdo;
 		const existingUser = await this.getById(userId, null);
+
+		if (!existingUser) {
+			throw new ExtendableError('user-not-found', 404);
+		}
 
 		const newUser = _.cloneDeep(existingUser);
 		if (!newUser.kdos) {
@@ -95,7 +100,7 @@ export class UsersService {
 				kdos: kdo,
 				historic: {
 					updatedAt: new Date(),
-					idUser: oid(userId),
+					idUser: oid(userIdEditing),
 					type: 'create-kdo',
 					dataEdited: diff
 				}
@@ -103,12 +108,15 @@ export class UsersService {
 		});
 	}
 
-	public async editKdo(kdo: Kdo, userId: string, index: number): Promise<void> {
+	public async editKdo(kdo: Kdo, userId: string, index: number, userIdEditing: string = userId): Promise<void> {
 		kdo = this.objectUtilsService.removeEmpty(kdo) as Kdo;
 		const set = {};
 
 		const existingUser = await this.getById(userId, null);
 
+		if (!existingUser) {
+			throw new ExtendableError('user-not-found', 404);
+		}
 		set['kdos.' + index] = Object.assign({}, existingUser.kdos[index], kdo);
 
 		const diff = this.objectUtilsService.getRightDiffs(existingUser.kdos[index], kdo);
@@ -120,7 +128,7 @@ export class UsersService {
 			$push: {
 				historic: {
 					updatedAt: new Date(),
-					idUser: oid(userId),
+					idUser: oid(userIdEditing),
 					type: 'edit-kdo',
 					dataEdited: diff
 				}

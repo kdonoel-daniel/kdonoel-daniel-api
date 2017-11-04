@@ -90,6 +90,29 @@ export class UsersController {
 		return _.omit(userRequested, 'password') as any;
 	}
 
+	@Post('/:userId/kdo')
+	@Authorized()
+	@OnUndefined(204)
+	public async addKdoToUser(
+		@CurrentUser({required: true}) user: User,
+		@Body() kdo: Kdo,
+		@Param('userId') userId: string) {
+		await this.usersService.addKdo(kdo, userId, user._id);
+		return this.usersService.getById(userId, user._id);
+	}
+
+	@Put('/:userId/kdo/:index')
+	@Authorized()
+	@OnUndefined(204)
+	public async editKdo(
+		@CurrentUser({required: true}) user: User,
+		@Body() kdo: Kdo,
+		@Param('index') index: number,
+		@Param('userId') userId: string) {
+		await this.usersService.editKdo(kdo, userId, index, user._id);
+		return this.usersService.getById(userId, user._id);
+	}
+
 	@Get()
 	@Authorized()
 	public async getUsers(): Promise<User[]> {
@@ -116,22 +139,6 @@ export class UsersController {
 		await this.usersService.setPassword(user._id, rstPwd.newPassword);
 
 		return;
-	}
-
-	@Post('/kdo')
-	@Authorized()
-	@OnUndefined(204)
-	public async addKdo(@CurrentUser({required: true}) user: User, @Body() kdo: Kdo) {
-		await this.usersService.addKdo(kdo, user._id);
-		return this.usersService.getById(user._id, user._id);
-	}
-
-	@Put('/kdo/:index')
-	@Authorized()
-	@OnUndefined(204)
-	public async editKdo(@CurrentUser({required: true}) user: User, @Body() kdo: Kdo, @Param('index') index: number) {
-		await this.usersService.editKdo(kdo, user._id, index);
-		return this.usersService.getById(user._id, user._id);
 	}
 
 	@Put('/:userId/kdo/:index/status')
