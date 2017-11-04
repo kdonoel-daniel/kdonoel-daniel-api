@@ -3,11 +3,9 @@ import { hashPassword } from './users.utils';
 const usersCollection = global.db.collection('users');
 
 export default async function() {
-	const users = await    usersCollection.find({
-		email: 'test-kdonoel@yopmail.com'
-	}).toArray();
+	const usersCount = await usersCollection.count({});
 
-	if (users.length === 0) {
+	if (usersCount === 0) {
 		global.log.module('user init').info('Insert base user');
 
 		usersCollection.insertOne({
