@@ -11,14 +11,14 @@ import {
 	Put,
 	UnauthorizedError
 } from 'routing-controllers';
-import { Service } from 'typedi';
-import { ExtendableError } from '../../extendable-error';
+import {Service} from 'typedi';
+import {ExtendableError} from '../../extendable-error';
 import * as UsersUtils from '../users/users.utils';
-import { StatusRequest } from './kdos-status-request.models';
-import { Kdo } from './kdos.models';
-import { ResetPassword, User, UsersKdosCounted } from './users.models';
+import {StatusRequest} from './kdos-status-request.models';
+import {Kdo} from './kdos.models';
+import {ResetPassword, User, UsersKdosCounted} from './users.models';
 
-import { UsersService } from './users.service';
+import {UsersService} from './users.service';
 
 @Service()
 @JsonController('/users')
@@ -97,7 +97,7 @@ export class UsersController {
 		@CurrentUser({required: true}) user: User,
 		@Body() kdo: Kdo,
 		@Param('userId') userId: string) {
-		await this.usersService.addKdo(kdo, userId, user._id);
+		await this.usersService.addKdo(kdo, userId, user);
 		return this.usersService.getById(userId, user._id);
 	}
 
@@ -109,7 +109,7 @@ export class UsersController {
 		@Body() kdo: Kdo,
 		@Param('index') index: number,
 		@Param('userId') userId: string) {
-		await this.usersService.editKdo(kdo, userId, index, user._id);
+		await this.usersService.editKdo(kdo, userId, index, user);
 		return this.usersService.getById(userId, user._id);
 	}
 

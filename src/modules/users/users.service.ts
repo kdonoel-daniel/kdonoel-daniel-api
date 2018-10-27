@@ -1,14 +1,14 @@
 import * as _ from 'lodash';
-import { Collection, Db } from 'mongodb';
-import { Service } from 'typedi';
-import { ExtendableError } from '../../extendable-error';
+import {Collection, Db} from 'mongodb';
+import {Service} from 'typedi';
+import {ExtendableError} from '../../extendable-error';
 
-import { oid, setIdMongoToStringAsync, setIdMongoToStringSync } from '../../mongo';
-import { ObjectUtilsService } from '../utils/object-utils.service';
-import { StatusRequest } from './kdos-status-request.models';
-import { Kdo } from './kdos.models';
-import { User } from './users.models';
-import { hashPassword } from './users.utils';
+import {oid, setIdMongoToStringAsync, setIdMongoToStringSync} from '../../mongo';
+import {ObjectUtilsService} from '../utils/object-utils.service';
+import {StatusRequest} from './kdos-status-request.models';
+import {Kdo} from './kdos.models';
+import {User} from './users.models';
+import {hashPassword} from './users.utils';
 
 @Service()
 export class UsersService {
@@ -78,7 +78,7 @@ export class UsersService {
 		await this.updatebyId(userId, user);
 	}
 
-	public async addKdo(kdo: Kdo, userId: string, userIdEditing: string = userId): Promise<void> {
+	public async addKdo(kdo: Kdo, userId: string, userEditing: User): Promise<void> {
 		kdo = this.objectUtilsService.removeEmpty(kdo) as Kdo;
 		const existingUser = await this.getById(userId, null);
 
@@ -100,7 +100,8 @@ export class UsersService {
 				kdos: kdo,
 				historic: {
 					updatedAt: new Date(),
-					idUser: oid(userIdEditing),
+					idUser: oid(userEditing._id),
+					userName: `${userEditing.firstName} ${userEditing.lastName}`,
 					type: 'create-kdo',
 					dataEdited: diff
 				}
@@ -108,7 +109,7 @@ export class UsersService {
 		});
 	}
 
-	public async editKdo(kdo: Kdo, userId: string, index: number, userIdEditing: string = userId): Promise<void> {
+	public async editKdo(kdo: Kdo, userId: string, index: number, userEditing: User): Promise<void> {
 		kdo = this.objectUtilsService.removeEmpty(kdo) as Kdo;
 		const set = {};
 
@@ -128,7 +129,8 @@ export class UsersService {
 			$push: {
 				historic: {
 					updatedAt: new Date(),
-					idUser: oid(userIdEditing),
+					idUser: oid(userEditing._id),
+					userName: `${userEditing.firstName} ${userEditing.lastName}`,
 					type: 'edit-kdo',
 					dataEdited: diff
 				}
