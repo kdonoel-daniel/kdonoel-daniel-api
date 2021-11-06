@@ -1,21 +1,15 @@
-import { Body, JsonController, Post } from 'routing-controllers';
+import { N9Error } from '@neo9/n9-node-utils';
+import { Body, JsonController, Post } from 'n9-node-routing';
 import { Service } from 'typedi';
-import { ExtendableError } from '../../extendable-error';
-import { User } from '../users/users.models';
-
 import { UsersService } from '../users/users.service';
-import * as UsersUtils from '../users/users.utils';
+import { UsersUtils } from '../users/users.utils';
 import { CreateSessionBody, Session } from './sessions.models';
 import { SessionsService } from './sessions.service';
 
 @Service()
 @JsonController('/sessions')
-export class UsersController {
-
-	constructor(
-		private usersService: UsersService,
-		private sessionsService: SessionsService) {
-	}
+export class SessionsController {
+	constructor(private usersService: UsersService, private sessionsService: SessionsService) {}
 
 	/**
 	 * Sign-up a new user
@@ -38,13 +32,14 @@ export class UsersController {
 		const email = createSessionBody.email;
 		const password = createSessionBody.password;
 
-		const user = await this.usersService.findOne({email}, {});
-		if (!user) throw new ExtendableError('invalid-credentials', 401);
+		const user = await this.usersService.getByEmail(email, { kdos: 0 });
+		if (!user) throw new N9Error('invalid-credentials', 401);
 
-		const match = await UsersUtils.verifyPassword(user.password, password);
+		const match = await UsersUtils.VERIFY_PASSWORD(user.password, password);
+		if (!match) throw new N9Error('invalid-credentials', 401);
 
-		if (!match) throw new ExtendableError('invalid-credentials', 401);
+		// TODO: add last session update
+		await this.usersService.updateLastSession(user._id);
 		return await this.sessionsService.generateUserSession(user);
 	}
-
 }

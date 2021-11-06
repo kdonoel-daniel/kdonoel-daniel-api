@@ -1,14 +1,15 @@
+import { Conf } from './index.models';
+
 const conf: Conf = {
-	log: {
-		level: 'info',
-		http: 'dev'
+	shutdown: {
+		waitDurationBeforeStop: 500,
 	},
 	mongo: {
-		url: 'mongodb://127.0.0.1:27017/kdos'
+		url: 'mongodb://127.0.0.1:27017/kdos',
 	},
 	jwt: {
 		secret: 'secret_key',
-		expiresIn: '30 days'
+		expiresIn: '30 days',
 	},
 };
 

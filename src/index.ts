@@ -1,77 +1,120 @@
-import * as glob from 'glob-promise';
-import * as  jwt from 'jsonwebtoken';
-import { join } from 'path';
+/* tslint:disable:ordered-imports */
 import 'reflect-metadata';
-import { Action, createExpressServer, useContainer } from 'routing-controllers';
-import { User } from './modules/users/users.models';
-import { Container } from 'typedi';
-// @formatter:off
-// Load project conf & set as global
-import conf from './conf';
-import { Log } from './logs';
 
-global.conf = conf;
-global.log = new Log(conf.name);
-
-import * as Mongo from './mongo';
-
-/**
- * Setup routing-controllers to use typedi container.
- */
-useContainer(Container);
-/**
- * We create a new express server instance.
- * We could have also use useExpressServer here to attach controllers to an existing express instance.
- */
-const expressApp = createExpressServer({
-	/**
-	 * We can add options about how routing-controllers should configure itself.
-	 * Here we specify what controllers should be registered in our express server.
-	 */
-	controllers: [__dirname + '/modules/**/*.controller.?s'],
-	authorizationChecker: async (action: Action, roles: string[]) => {
-		const token = action.request.headers['authorization'];
-
-		try {
-			const user = jwt.verify(token, global.conf.jwt.secret) as User;
-			return !!user;
-		} catch (e) {
-			return false;
-		}
-	},
-	currentUserChecker: (action) => {
-		const token = action.request.headers['authorization'];
-		return jwt.verify(token, global.conf.jwt.secret) as User;
-	}
-});
-// @formatter:on
-
-// Provides a stack trace for unhandled rejections instead of the default message string.
-process.on('unhandledRejection', (err: any) => {
-	throw err;
-});
+import { MongoUtils } from '@neo9/n9-mongo-client';
+import n9NodeConf from '@neo9/n9-node-conf';
+// Dependencies
+import n9NodeLog from '@neo9/n9-node-log';
+import * as bodyParser from 'body-parser';
+import { Express } from 'express';
+import fastSafeStringify from 'fast-safe-stringify';
+import { Server } from 'http';
+import { Db } from 'mongodb';
+import n9NodeRouting, { N9NodeRouting, Container, Action } from 'n9-node-routing';
+import { join } from 'path';
+// Add source map supports
+// tslint:disable:no-import-side-effect
+import 'source-map-support/register';
+import { Conf } from './conf/index.models';
+import { UsersUtils } from './modules/users/users.utils';
+import { SessionsUtils } from './modules/sessions/sessions.utils';
 
 // Start method
-(async () => {
+async function start(
+	confOverride: Partial<Conf> = {},
+): Promise<{ server: Server; db: Db; conf: Conf }> {
+	// Load project conf & set as global
+	const conf = (global.conf = n9NodeConf({
+		path: join(__dirname, 'conf'),
+		extendConfig: {
+			key: 'starterApi',
+			path: {
+				relative: './env/env.yaml',
+			},
+		},
+		override: {
+			value: confOverride,
+		},
+	}) as Conf);
+
+	const log = (global.log = n9NodeLog(conf.name, global.conf.log));
+	// Load loaded configuration
+	log.info(`Conf loaded: ${conf.env}`);
+
 	// Profile startup boot time
-	global.log.info('BEGIN startup');
+	log.profile('startup');
+	// print app infos
+	const initialInfos = `${conf.name} version : ${conf.version} env: ${conf.env}`;
+	log.info('-'.repeat(initialInfos.length));
+	log.info(initialInfos);
+	log.info('-'.repeat(initialInfos.length));
+
 	// Connect to MongoDB
-	await Mongo.connect();
-	// Run modules init
-	const initFiles = await glob('**/*.init.+(ts|js)', {cwd: __dirname});
-	await initFiles.reduce(async (promiseChain: any, item: string) => {
-		return promiseChain.then(async () => {
-			return require(join(__dirname, item)).default();
-		});
-	}, Promise.resolve());
+	const db = await MongoUtils.connect(conf.mongo.url, conf.mongo.options);
+	Container.set('db', db);
 
-	/**
-	 * Start the express app.
-	 */
-	expressApp.listen(global.conf.http.port);
+	const pingDbs = [
+		{
+			name: 'MongoDB',
+			thisArg: global.dbClient,
+			isConnected: global.dbClient.isConnected,
+		},
+	];
+	Container.set('pingDbs', pingDbs);
 
-	global.log.info('Server is up and running at port ' + global.conf.http.port);
+	const callbacksBeforeShutdown: N9NodeRouting.CallbacksBeforeShutdown[] = [];
+	Container.set('callbacksBeforeShutdown', callbacksBeforeShutdown);
+
+	// Load modules
+	const { server } = await n9NodeRouting({
+		hasProxy: false,
+		path: join(__dirname, 'modules'),
+		http: {
+			...conf.http,
+			beforeRoutingControllerLaunchHook: async (app2: Express) => {
+				log.info('Add JWT decoder');
+				SessionsUtils.SET_JWT_LOADER(conf, log, app2);
+
+				app2.use(bodyParser.json({ limit: conf.bodyParser?.limit }));
+			},
+			ping: {
+				dbs: pingDbs,
+			},
+			routingController: {
+				currentUserChecker: (action) => {
+					const token = action.request.headers['x-jwt-token'];
+					return SessionsUtils.GET_TOKEN_CONTENT(token, global.conf.jwt.secret);
+				},
+			},
+		},
+		enableLogFormatJSON: conf.enableLogFormatJSON,
+		openapi: conf.openapi,
+		shutdown: {
+			...conf.shutdown,
+			callbacksBeforeShutdown,
+		},
+		prometheus: conf.metrics.isEnabled ? {} : undefined,
+	});
 
 	// Log the startup time
-	global.log.info('END   startup');
-})();
+	log.profile('startup');
+	// Return server and more for testing
+	return { server, db, conf };
+}
+
+// Start server if not in test mode
+/* istanbul ignore if */
+if (process.env.NODE_ENV !== 'test') {
+	start()
+		.then(() => {
+			(global.log || console).info('Launch SUCCESS !');
+		})
+		.catch((e) => {
+			(global.log || console).error(`Error on launch : `, {
+				errString: fastSafeStringify(e),
+			});
+			throw e;
+		});
+}
+
+export default start;

@@ -2,14 +2,14 @@
 
 1. Install all dependencies:
 
-    `npm install`
-    
+   `npm install`
+
 2. Run the project:
 
-    `npm start`
+   `npm start`
 
 3. Open in browser:
- 
-    `http://localhost:3000/`
 
-This project targets ES6. 
+   `http://localhost:3000/`
+
+This project targets ES6.

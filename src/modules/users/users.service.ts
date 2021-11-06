@@ -1,165 +1,140 @@
-import * as _ from 'lodash';
-import {Collection, Db} from 'mongodb';
-import {Service} from 'typedi';
-import {ExtendableError} from '../../extendable-error';
-
-import {oid, setIdMongoToStringAsync, setIdMongoToStringSync} from '../../mongo';
-import {ObjectUtilsService} from '../utils/object-utils.service';
-import {StatusRequest} from './kdos-status-request.models';
-import {Kdo} from './kdos.models';
-import {User} from './users.models';
-import {hashPassword} from './users.utils';
+import { MongoClient, MongoUtils, StringMap } from '@neo9/n9-mongo-client';
+import { N9Error } from '@neo9/n9-node-utils';
+import * as crypto from 'crypto';
+import lodash = require('lodash');
+import { Cursor, FilterQuery } from 'mongodb';
+import { DateParser, Service } from 'n9-node-routing';
+import { TokenContent } from '../sessions/sessions.models';
+import { StatusRequest as StatusRequestUpdate } from './kdos-status-request.models';
+import { Kdo, KdoState } from './kdos.models';
+import { UserEntity, UserListItem } from './users.models';
+import { UsersUtils } from './users.utils';
 
 @Service()
 export class UsersService {
-	private db: Db = global.db;
-	private users: Collection = this.db.collection('users');
+	private mongoClient: MongoClient<UserEntity, UserEntity>;
 
-	constructor(private objectUtilsService: ObjectUtilsService) {
+	constructor() {
+		this.mongoClient = new MongoClient('users', UserEntity, UserListItem, {
+			keepHistoric: true,
+		});
 	}
 
-	public async create(user: User): Promise<User> {
-		// Hash password
-		user.password = await hashPassword(user.password);
-		// Add date creation
-		user.createdAt = new Date();
-		// Save to database
-		await this.users.insertOne(user);
-		// Send back user
+	public async create(user: UserEntity): Promise<UserEntity> {
+		user.password = await UsersUtils.HASH_PASSWORD(user.password);
+		return await this.mongoClient.insertOne(user, 'none');
+	}
+
+	public async getById(
+		userId: string,
+		userIdFor?: string,
+		projection: StringMap<number> = {},
+	): Promise<UserEntity> {
+		if (userIdFor && userId === userIdFor) {
+			projection['kdos.status'] = 0;
+		}
+		const user = await this.mongoClient.findOneById(userId, projection);
+		if (!user) {
+			throw new N9Error('user-not-found', 404, { id: userId });
+		}
 		return user;
 	}
 
-	public async getById(userId: string, userIdFor: string, projection?: object): Promise<User> {
-		if (userId === userIdFor) {
-			if (!projection) {
-				projection = {};
-			}
-			projection = Object.assign(projection, {
-				'kdos.status': 0
-			});
+	public async getByEmail(email: string, projection?: object): Promise<UserEntity> {
+		return await this.mongoClient.findOneByKey(email, 'email', projection);
+	}
+
+	public async find(
+		query: FilterQuery<UserEntity>,
+		projection: object = {},
+	): Promise<Cursor<UserEntity>> {
+		return await this.mongoClient.find(query, 0, 0, { lastName: 1, firstName: 1 }, projection);
+	}
+
+	public async setPassword(userId: string, pwd: string, editor: TokenContent): Promise<void> {
+		const user = await this.getById(userId);
+		user.password = await UsersUtils.HASH_PASSWORD(pwd);
+		await this.updatebyId(userId, user, editor.userId);
+	}
+
+	public async updateLastSession(userId: string): Promise<void> {
+		const user = await this.getById(userId);
+		user.lastSessionAt = new Date();
+		await this.updatebyId(userId, user, userId);
+	}
+
+	public async addKdo(kdo: Kdo, userId: string, editor: TokenContent): Promise<UserEntity> {
+		const userToUpate = await this.getById(userId);
+
+		if (!userToUpate.kdos) {
+			userToUpate.kdos = [];
 		}
-		return await this.findOne({_id: oid(userId)}, projection);
+
+		userToUpate.kdos.push({
+			...kdo,
+			status: {
+				code: KdoState.FREE,
+			},
+		});
+
+		return await this.updatebyId(userId, userToUpate, editor.userId);
 	}
 
-	public async getByEmail(email: string, projection?: object): Promise<User> {
-		return await this.findOne({email}, projection);
+	public async editKdo(
+		kdo: Kdo,
+		userId: string,
+		index: number,
+		editor: TokenContent,
+	): Promise<void> {
+		const userToUpate = await this.getById(userId);
+
+		userToUpate.kdos[index] = {
+			...userToUpate.kdos[index],
+			...kdo,
+			status: userToUpate.kdos[index].status,
+		};
+
+		await this.updatebyId(userId, userToUpate, editor.userId);
 	}
 
-	public async findOne(query: object, projection?: object): Promise<User> {
-		if (!projection) {
-			projection = {};
+	public async setKdoStatus(
+		userId: string,
+		index: number,
+		statusRequestUpdate: StatusRequestUpdate,
+		editor: TokenContent,
+	): Promise<void> {
+		const userToUpate = await this.getById(userId);
+
+		if (
+			userToUpate.kdos[index].status?.userId &&
+			userToUpate.kdos[index].status?.userId !== editor.userId
+		) {
+			throw new N9Error('can-t-update-status', 401);
 		}
-		return await setIdMongoToStringAsync(this.users.findOne(query, {
-			fields: projection
-		}));
+		userToUpate.kdos[index] = {
+			...userToUpate.kdos[index],
+			status: {
+				code: statusRequestUpdate.status,
+				userId: editor.userId,
+				lastUpdateDate: new Date(),
+			},
+		};
+
+		await this.updatebyId(userId, userToUpate, editor.userId);
 	}
 
-	public async find(query: object, projection: object = {}): Promise<User[]> {
-		return (await this.users.find(query).project(projection).sort({
-			firstName: 1
-		}).toArray()).map((e) => setIdMongoToStringSync(e));
-	}
-
-	public async updatebyId(userId: string, user: User): Promise<void> {
-		// Add/Update updateAt property
-		user.updatedAt = new Date();
+	private async updatebyId(
+		userId: string,
+		user: UserEntity,
+		editorId: string,
+	): Promise<UserEntity> {
 		// Find and update the user
-		await this.users.findOneAndUpdate(
-			{_id: oid(userId)},
-			{$set: user},
-			{returnOriginal: false}
+		return await this.mongoClient.findOneAndUpdateByIdWithLocks(
+			userId,
+			user,
+			editorId,
+			false,
+			true,
 		);
-	}
-
-	public async setPassword(userId: string, pwd: string): Promise<void> {
-		const user = await this.getById(userId, null);
-		user.password = await hashPassword(pwd);
-		delete user._id;
-		await this.updatebyId(userId, user);
-	}
-
-	public async addKdo(kdo: Kdo, userId: string, userEditing: User): Promise<void> {
-		kdo = this.objectUtilsService.removeEmpty(kdo) as Kdo;
-		const existingUser = await this.getById(userId, null);
-
-		if (!existingUser) {
-			throw new ExtendableError('user-not-found', 404);
-		}
-
-		const newUser = _.cloneDeep(existingUser);
-		if (!newUser.kdos) {
-			newUser.kdos = [];
-		}
-		newUser.kdos.push(kdo);
-		const diff = this.objectUtilsService.getRightDiffs(existingUser, newUser);
-
-		await this.users.updateOne({
-			_id: oid(userId)
-		}, {
-			$push: {
-				kdos: kdo,
-				historic: {
-					updatedAt: new Date(),
-					idUser: oid(userEditing._id),
-					userName: `${userEditing.firstName} ${userEditing.lastName}`,
-					type: 'create-kdo',
-					dataEdited: diff
-				}
-			}
-		});
-	}
-
-	public async editKdo(kdo: Kdo, userId: string, index: number, userEditing: User): Promise<void> {
-		kdo = this.objectUtilsService.removeEmpty(kdo) as Kdo;
-		const set = {};
-
-		const existingUser = await this.getById(userId, null);
-
-		if (!existingUser) {
-			throw new ExtendableError('user-not-found', 404);
-		}
-		set['kdos.' + index] = Object.assign({}, existingUser.kdos[index], kdo);
-
-		const diff = this.objectUtilsService.getRightDiffs(existingUser.kdos[index], kdo);
-
-		await this.users.updateOne({
-			_id: oid(userId)
-		}, {
-			$set: set,
-			$push: {
-				historic: {
-					updatedAt: new Date(),
-					idUser: oid(userEditing._id),
-					userName: `${userEditing.firstName} ${userEditing.lastName}`,
-					type: 'edit-kdo',
-					dataEdited: diff
-				}
-			}
-		});
-	}
-
-	public async setKdoStatus(userId: string, index: number, status: StatusRequest): Promise<void> {
-		const set = {};
-		const existingUser = await this.getById(userId, null);
-
-		const newKdo = _.cloneDeep(existingUser.kdos[index]);
-		newKdo.status = status.status;
-		set['kdos.' + index] = newKdo;
-
-		const diff = this.objectUtilsService.getRightDiffs(existingUser.kdos[index], newKdo);
-
-		await this.users.updateOne({
-			_id: oid(userId)
-		}, {
-			$set: set,
-			$push: {
-				historic: {
-					updatedAt: new Date(),
-					idUser: oid(userId),
-					type: 'edit-kdo-status',
-					dataEdited: diff
-				}
-			}
-		});
 	}
 }

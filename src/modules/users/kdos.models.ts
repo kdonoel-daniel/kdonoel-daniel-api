@@ -1,13 +1,38 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+
+export enum KdoState {
+	'FREE' = 'free',
+	'RESERVED' = 'reserved',
+	'BOUGHT' = 'bought',
+}
+
+export class KdoStatus {
+	@IsEnum(KdoState)
+	public code: KdoState;
+
+	@IsString()
+	public userId?: string;
+
+	public lastUpdateDate?: Date;
+}
 
 export class Kdo {
-
 	@IsNotEmpty()
 	public title: string;
 
+	@IsString()
+	@IsOptional()
 	public description?: string;
-	public status?: KdoState;
-	public historic?: object[];
+
+	@ValidateNested()
+	public status?: KdoStatus;
 }
 
-export type KdoState = 'FREE' | 'RESERVED' | 'BOUGHT';
+export class KdoRequestCreate {
+	@IsNotEmpty()
+	public title: string;
+
+	@IsString()
+	@IsOptional()
+	public description?: string;
+}

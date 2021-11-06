@@ -1,8 +1,7 @@
 import { IsEmail, Matches, MinLength } from 'class-validator';
-import { User } from '../users/users.models';
+import { UserEntity } from '../users/users.models';
 
 export class CreateSessionBody {
-
 	@IsEmail()
 	public email: string;
 
@@ -13,11 +12,11 @@ export class CreateSessionBody {
 
 export interface Session {
 	token: string;
-	profile: User;
+	profile: UserEntity;
 }
 
-export interface TokenDetails {
-	_id: string;
+export interface TokenContent {
+	userId: string;
 	email: string;
 	firstName: string;
 	lastName: string;
