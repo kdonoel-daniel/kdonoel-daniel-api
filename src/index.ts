@@ -37,7 +37,7 @@ async function start(
 		},
 	}) as Conf);
 
-	const log = (global.log = n9NodeLog(conf.name, global.conf.log));
+	const log = (global.log = n9NodeLog(conf.name, conf.log));
 	// Load loaded configuration
 	log.info(`Conf loaded: ${conf.env}`);
 

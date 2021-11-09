@@ -122,6 +122,7 @@ export class UsersController {
 
 		return users.map((u): UserListItem => {
 			return {
+				_id: u._id,
 				email: u.email,
 				firstName: u.firstName,
 				lastName: u.lastName,
