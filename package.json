@@ -1,13 +1,13 @@
 {
   "name": "kdos-daniel-api",
   "private": true,
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "description": "Kdos api for kdos daniel web app",
   "license": "MIT",
   "main": "index.js",
   "scripts": {
     "dev": "TS_NODE_FILES=true nodemon -V --exec 'fuser -k 10010/tcp; sleep 2; node -r ts-node/register --inspect=0.0.0.0:10010 -- src/index.ts'",
-		"build": "rm -rf dist/ && tsc && yarn run generate-openapi-documentation && cp openapi-documentation.json dist/ && cp package.json dist/ && cp yarn.lock dist/ && cp .yarnclean dist/ && cd dist/ && node -e \"const package = require('./package.json'); delete package.devDependencies; require('fs').writeFileSync('package.json', JSON.stringify(package, null, 2));\" && yarn install && yarn autoclean -F && cd .. && cp -r mongodb-migration-scripts/ dist/",
+    "build": "rm -rf dist/ && tsc && yarn run generate-openapi-documentation && cp openapi-documentation.json dist/ && cp package.json dist/ && cp yarn.lock dist/ && cp .yarnclean dist/ && cd dist/ && node -e \"const package = require('./package.json'); delete package.devDependencies; require('fs').writeFileSync('package.json', JSON.stringify(package, null, 2));\" && yarn install && yarn autoclean -F && cd .. && cp -r mongodb-migration-scripts/ dist/",
     "package": "rimraf build/*.tar && npm run build && tar cf build/$npm_package_name-v$npm_package_version.tar dist/*",
     "start": "node dist/",
     "mongodb-migrate": "node dist/src/mongodb-migration.js",
