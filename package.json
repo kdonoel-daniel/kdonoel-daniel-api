@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "TS_NODE_FILES=true nodemon -V --exec 'fuser -k 10010/tcp; sleep 2; node -r ts-node/register --inspect=0.0.0.0:10010 -- src/index.ts'",
     "build": "rm -rf dist/ && tsc && yarn run generate-openapi-documentation && cp openapi-documentation.json dist/ && cp package.json dist/ && cp -r node_modules/ dist/ && cp -r mongodb-migration-scripts/ dist/",
-    "start": "node dist/",
+		"package": "rimraf build/*.tar && npm run build && tar cf build/$npm_package_name-v$npm_package_version.tar dist/*",
+		"start": "node dist/",
     "mongodb-migrate": "node dist/src/mongodb-migration.js",
     "mongodb-migrate:one-shot": "TS_NODE_FILES=true ts-node -- src/mongodb-migration.ts",
     "mongodb-migrate:docker": "node dist/mongodb-migration.js",

@@ -1,7 +1,7 @@
-import {BaseMongoObject} from '@neo9/n9-mongo-client';
-import {IsEmail, IsNotEmpty, IsString, Matches, MinLength} from 'class-validator';
-import {Exclude, Expose} from 'n9-node-routing';
-import {Kdo} from './kdos.models';
+import { BaseMongoObject } from '@neo9/n9-mongo-client';
+import { IsEmail, IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
+import { Exclude, Expose } from 'n9-node-routing';
+import { Kdo } from './kdos.models';
 
 @Exclude()
 export class UserRequestCreate {
