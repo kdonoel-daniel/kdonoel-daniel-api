@@ -1,3 +1,6 @@
+* format: Fix format (6691675)
+* release: Fix hook on build to package (293cca7)
+
 * build: Reduce release files size (b17ff74)
 
 
