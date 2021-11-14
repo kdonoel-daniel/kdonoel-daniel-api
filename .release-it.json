@@ -2,7 +2,7 @@
   "hooks": {
     "after:git:bump": "npm run package"
   },
-	"verbose": 2,
+  "verbose": 2,
   "git": {
     "commit": true,
     "commitMessage": "release: V ${version}",
