@@ -1,3 +1,5 @@
+# [1.0.0](https://github.com/neo9/n9-node-microservice-skeleton/compare/1.0.0-alpha.3...1.0.0) (2021-11-14)
+
 * format: Fix format (6691675)
 * release: Fix hook on build to package (293cca7)
 
