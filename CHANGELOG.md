@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/neo9/n9-node-microservice-skeleton/compare/1.0.0...1.1.0) (2021-11-16)
+
+
+### init
+
+* Add users init password and email unique index ([0d9b33c](https://github.com/neo9/n9-node-microservice-skeleton/commit/0d9b33ca9b0d27e19c08dbe078cf2bc70609a341))
+
 # [1.0.0](https://github.com/neo9/n9-node-microservice-skeleton/compare/1.0.0-alpha.3...1.0.0) (2021-11-14)
 
 * format: Fix format (6691675)
