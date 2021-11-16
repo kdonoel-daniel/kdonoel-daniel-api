@@ -6,30 +6,36 @@ import {
 	CurrentUser,
 	Get,
 	JsonController,
-	OnUndefined,
 	Param,
 	Post,
 	Put,
 } from 'n9-node-routing';
 import { Service } from 'typedi';
-import { TokenContent } from '../sessions/sessions.models';
+import { Session, TokenContent } from '../sessions/sessions.models';
 import { StatusRequest } from './kdos-status-request.models';
 import { Kdo, KdoRequestCreate } from './kdos.models';
-import { PasswordResetRequest, UserEntity, UserListItem, UserRequestCreate } from './users.models';
+import {
+	PasswordInitRequest,
+	PasswordResetRequest,
+	UserEntity,
+	UserListItem,
+	UserRequestCreate,
+} from './users.models';
 
+import { SessionsService } from '../sessions/sessions.service';
 import { UsersService } from './users.service';
 import { UsersUtils } from './users.utils';
 
 @Service()
 @JsonController('/users')
 export class UsersController {
-	constructor(private usersService: UsersService) {}
+	constructor(private usersService: UsersService, private sessionsService: SessionsService) {}
 
 	/**
 	 * Sign-up a new user
 	 *
 	 * @param userBody
-	 * @returns {Promise<User>}
+	 * @returns {Promise<UserEntity>}
 	 * Sample :
 	 * <pre><code>
 	 *  {
@@ -62,7 +68,7 @@ export class UsersController {
 	 *
 	 * @param userId ID Mongo
 	 * @param user session User
-	 * @returns {Promise<User>}
+	 * @returns {Promise<UserEntity>}
 	 * Sample :
 	 * <pre><code>
 	 *  {
@@ -74,7 +80,7 @@ export class UsersController {
 	 * }
 	 * </code></pre>
 	 */
-	@Get('/:id')
+	@Get('/:id([0-9a-f]{24})')
 	@Authorized()
 	public async getUserById(
 		@CurrentUser({ required: true }) user: TokenContent,
@@ -89,9 +95,8 @@ export class UsersController {
 		return _.omit(userRequested, 'password') as any;
 	}
 
-	@Post('/:userId/kdos')
+	@Post('/:userId([0-9a-f]{24})/kdos')
 	@Authorized()
-	@OnUndefined(204)
 	public async addKdoToUser(
 		@CurrentUser({ required: true }) user: TokenContent,
 		@Body() kdo: KdoRequestCreate,
@@ -100,9 +105,8 @@ export class UsersController {
 		return await this.usersService.addKdo(kdo, userId, user);
 	}
 
-	@Put('/:userId/kdos/:index')
+	@Put('/:userId([0-9a-f]{24})/kdos/:index')
 	@Authorized()
-	@OnUndefined(204)
 	public async editKdo(
 		@CurrentUser({ required: true }) user: TokenContent,
 		@Body() kdo: Kdo,
@@ -110,7 +114,7 @@ export class UsersController {
 		@Param('userId') userId: string,
 	): Promise<UserEntity> {
 		await this.usersService.editKdo(kdo, userId, index, user);
-		return this.usersService.getById(userId, user.userId);
+		return await this.usersService.getById(userId, user.userId);
 	}
 
 	@Get()
@@ -135,7 +139,6 @@ export class UsersController {
 
 	@Post('/reset/password')
 	@Authorized()
-	@OnUndefined(204)
 	public async resetPassword(
 		@CurrentUser({ required: true }) user: TokenContent,
 		@Body() passwordResetRequest: PasswordResetRequest,
@@ -148,13 +151,10 @@ export class UsersController {
 		if (!match) throw new N9Error('invalid-credentials', 401);
 
 		await this.usersService.setPassword(user.userId, passwordResetRequest.newPassword, user);
-
-		return;
 	}
 
-	@Put('/:userId/kdos/:index/status')
+	@Put('/:userId([0-9a-f]{24})/kdos/:index([0-9]+)/status')
 	@Authorized()
-	@OnUndefined(204)
 	public async setKdoStatus(
 		@CurrentUser({ required: true }) user: TokenContent,
 		@Param('userId') userId: string,
@@ -166,5 +166,13 @@ export class UsersController {
 		}
 		await this.usersService.setKdoStatus(userId, index, status, user);
 		return this.usersService.getById(userId, user.userId);
+	}
+
+	@Post('/init/password')
+	public async initPassword(@Body() passwordInitRequest: PasswordInitRequest): Promise<Session> {
+		const user = await this.usersService.initPassword(passwordInitRequest);
+
+		await this.usersService.updateLastSession(user._id);
+		return this.sessionsService.generateUserSession(user);
 	}
 }

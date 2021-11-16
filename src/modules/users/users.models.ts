@@ -50,3 +50,13 @@ export class PasswordResetRequest {
 	@Matches(/^(?=.*[A-Za-z])(?=.*[0-9])[A-Za-z0-9]{8,}$/i)
 	public newPassword: string;
 }
+
+export class PasswordInitRequest {
+	@IsEmail()
+	@Expose()
+	public email: string;
+
+	@MinLength(8)
+	@Matches(/^(?=.*[A-Za-z])(?=.*[0-9])[A-Za-z0-9]{8,}$/i)
+	public pwd: string;
+}

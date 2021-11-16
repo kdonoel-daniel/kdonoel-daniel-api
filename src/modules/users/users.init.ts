@@ -10,27 +10,20 @@ export default async function (logger: N9Log): Promise<void> {
 		logger.info('Insert base user');
 
 		await usersCollection.insertOne({
-			token: '',
 			email: 'test-kdonoel@yopmail.com',
 			firstName: 'Admin',
 			lastName: 'Admin',
 			password: await UsersUtils.HASH_PASSWORD('azerty123'),
-			updatedAt: new Date(),
-			createdAt: new Date(),
-			lastSessionAt: null,
 		});
 
 		await usersCollection.insertOne({
-			token: '',
 			email: 'test-kdonoel2@yopmail.com',
 			firstName: 'User2',
 			lastName: 'Last Name',
 			password: await UsersUtils.HASH_PASSWORD('azerty123'),
-			updatedAt: new Date(),
-			createdAt: new Date(),
-			lastSessionAt: null,
 		});
 
 		logger.info('User init OK');
 	}
+	await usersCollection.createIndex({ email: 1 }, { unique: true });
 }

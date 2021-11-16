@@ -6,9 +6,16 @@ import { Session, TokenContent } from './sessions.models';
 
 @Service()
 export class SessionsService {
-	public async generateUserSession(user: UserEntity): Promise<Session> {
-		return await {
-			token: this.generateAccessToken({
+	private static generateAccessToken(session: TokenContent): string {
+		const conf = global.conf as Conf;
+		return jwt.sign(session, conf.jwt.secret, {
+			expiresIn: conf.jwt.expiresIn,
+		});
+	}
+
+	public generateUserSession(user: UserEntity): Session {
+		return {
+			token: SessionsService.generateAccessToken({
 				userId: user._id,
 				email: user.email,
 				firstName: user.firstName,
@@ -21,12 +28,5 @@ export class SessionsService {
 				lastName: user.lastName,
 			},
 		};
-	}
-
-	private generateAccessToken(session: TokenContent): string {
-		const conf = global.conf as Conf;
-		return jwt.sign(session, conf.jwt.secret, {
-			expiresIn: conf.jwt.expiresIn,
-		});
 	}
 }

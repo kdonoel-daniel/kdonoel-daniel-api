@@ -1,13 +1,11 @@
-import { MongoClient, MongoUtils, StringMap } from '@neo9/n9-mongo-client';
+import { MongoClient, StringMap } from '@neo9/n9-mongo-client';
 import { N9Error } from '@neo9/n9-node-utils';
-import * as crypto from 'crypto';
-import lodash = require('lodash');
 import { Cursor, FilterQuery } from 'mongodb';
-import { DateParser, Service } from 'n9-node-routing';
+import { Service } from 'n9-node-routing';
 import { TokenContent } from '../sessions/sessions.models';
 import { StatusRequest as StatusRequestUpdate } from './kdos-status-request.models';
 import { Kdo, KdoState } from './kdos.models';
-import { UserEntity, UserListItem } from './users.models';
+import { PasswordInitRequest, UserEntity, UserListItem } from './users.models';
 import { UsersUtils } from './users.utils';
 
 @Service()
@@ -54,13 +52,13 @@ export class UsersService {
 	public async setPassword(userId: string, pwd: string, editor: TokenContent): Promise<void> {
 		const user = await this.getById(userId);
 		user.password = await UsersUtils.HASH_PASSWORD(pwd);
-		await this.updatebyId(userId, user, editor.userId);
+		await this.updateById(userId, user, editor.userId);
 	}
 
 	public async updateLastSession(userId: string): Promise<void> {
 		const user = await this.getById(userId);
 		user.lastSessionAt = new Date();
-		await this.updatebyId(userId, user, userId);
+		await this.updateById(userId, user, userId);
 	}
 
 	public async addKdo(kdo: Kdo, userId: string, editor: TokenContent): Promise<UserEntity> {
@@ -77,7 +75,7 @@ export class UsersService {
 			},
 		});
 
-		return await this.updatebyId(userId, userToUpate, editor.userId);
+		return await this.updateById(userId, userToUpate, editor.userId);
 	}
 
 	public async editKdo(
@@ -94,7 +92,7 @@ export class UsersService {
 			status: userToUpate.kdos[index].status,
 		};
 
-		await this.updatebyId(userId, userToUpate, editor.userId);
+		await this.updateById(userId, userToUpate, editor.userId);
 	}
 
 	public async setKdoStatus(
@@ -120,15 +118,29 @@ export class UsersService {
 			},
 		};
 
-		await this.updatebyId(userId, userToUpate, editor.userId);
+		await this.updateById(userId, userToUpate, editor.userId);
 	}
 
-	private async updatebyId(
+	public async initPassword(passwordInitRequest: PasswordInitRequest): Promise<UserEntity> {
+		const user = await this.getByEmail(passwordInitRequest.email);
+		if (!user) throw new N9Error('user-not-found', 404);
+		if (user.password) throw new N9Error('password-already-set', 401);
+
+		return await this.updateById(
+			user._id,
+			{
+				...user,
+				password: await UsersUtils.HASH_PASSWORD(passwordInitRequest.pwd),
+			},
+			user._id,
+		);
+	}
+
+	private async updateById(
 		userId: string,
 		user: UserEntity,
 		editorId: string,
 	): Promise<UserEntity> {
-		// Find and update the user
 		return await this.mongoClient.findOneAndUpdateByIdWithLocks(
 			userId,
 			user,
