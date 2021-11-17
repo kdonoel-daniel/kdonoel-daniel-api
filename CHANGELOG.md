@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/neo9/n9-node-microservice-skeleton/compare/1.1.0...1.1.1) (2021-11-17)
+
+
+### password
+
+* Allow stronger password ([43387b9](https://github.com/neo9/n9-node-microservice-skeleton/commit/43387b9961bd63a211e8077e09dbf33692b01064))
+
 # [1.1.0](https://github.com/neo9/n9-node-microservice-skeleton/compare/1.0.0...1.1.0) (2021-11-16)
 
 
