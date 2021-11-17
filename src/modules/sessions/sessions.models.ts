@@ -6,7 +6,7 @@ export class CreateSessionBody {
 	public email: string;
 
 	@MinLength(8)
-	@Matches(/^(?=.*[A-Za-z])(?=.*[0-9])[A-Za-z0-9]{8,}$/i)
+	@Matches(/^(?=.*[A-Za-z])(?=.*[0-9]).{8,}$/i)
 	public password?: string;
 }
 
