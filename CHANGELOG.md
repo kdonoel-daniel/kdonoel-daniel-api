@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/neo9/n9-node-microservice-skeleton/compare/1.2.0...1.2.1) (2021-11-20)
+
+
+### families
+
+* Fix families check by using bd data and not session provided ones ([a9a114f](https://github.com/neo9/n9-node-microservice-skeleton/commit/a9a114f2ef8e6fa48063a4a587082129335f57d4))
+
 # [1.2.0](https://github.com/neo9/n9-node-microservice-skeleton/compare/1.1.1...1.2.0) (2021-11-20)
 
 
