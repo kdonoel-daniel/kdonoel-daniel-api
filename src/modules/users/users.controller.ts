@@ -124,7 +124,8 @@ export class UsersController {
 		@CurrentUser({ required: true }) user: TokenContent,
 		@QueryParam('family-code', { required: true }) familyCode: string,
 	): Promise<UserListItem[]> {
-		if (!user.familyCodes?.includes(familyCode)) {
+		const fullUser = await this.usersService.getById(user.userId, null);
+		if (!fullUser.familyCodes?.includes(familyCode)) {
 			throw new N9Error('wrong-family', 400, { familyCode });
 		}
 		const users: UserEntity[] = await (
