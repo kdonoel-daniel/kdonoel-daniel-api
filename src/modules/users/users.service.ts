@@ -46,7 +46,7 @@ export class UsersService {
 		query: FilterQuery<UserEntity>,
 		projection: object = {},
 	): Promise<Cursor<UserEntity>> {
-		return await this.mongoClient.find(query, 0, 0, { lastName: 1, firstName: 1 }, projection);
+		return await this.mongoClient.find(query, 0, 0, { firstName: 1, lastName: 1 }, projection);
 	}
 
 	public async setPassword(userId: string, pwd: string, editor: TokenContent): Promise<void> {
