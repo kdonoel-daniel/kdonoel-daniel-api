@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/neo9/n9-node-microservice-skeleton/compare/1.2.1...1.2.2) (2021-11-20)
+
+
+### users
+
+* Change users sort to firstName first ([ca2cb89](https://github.com/neo9/n9-node-microservice-skeleton/commit/ca2cb89a19bb2c275e313f9332f574739ff6a358))
+
 ## [1.2.1](https://github.com/neo9/n9-node-microservice-skeleton/compare/1.2.0...1.2.1) (2021-11-20)
 
 
