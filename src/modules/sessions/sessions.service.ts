@@ -20,12 +20,14 @@ export class SessionsService {
 				email: user.email,
 				firstName: user.firstName,
 				lastName: user.lastName,
+				familyCodes: user.familyCodes,
 			}),
 			profile: {
 				_id: user._id,
 				email: user.email,
 				firstName: user.firstName,
 				lastName: user.lastName,
+				familyCodes: user.familyCodes,
 			},
 		};
 	}

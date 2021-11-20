@@ -1,6 +1,6 @@
 import { BaseMongoObject } from '@neo9/n9-mongo-client';
 import { IsEmail, IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
-import { Exclude, Expose } from 'n9-node-routing';
+import { ArrayMinSize, Exclude, Expose, IsArray } from 'n9-node-routing';
 import { Kdo } from './kdos.models';
 
 @Exclude()
@@ -8,6 +8,7 @@ export class UserRequestCreate {
 	@IsEmail()
 	@Expose()
 	public email: string;
+
 	@IsString()
 	@IsNotEmpty()
 	@MinLength(2)
@@ -19,6 +20,13 @@ export class UserRequestCreate {
 	@MinLength(2)
 	@Expose()
 	public lastName: string;
+
+	@IsString({ each: true })
+	@IsArray()
+	@ArrayMinSize(1)
+	@IsNotEmpty()
+	@Expose()
+	public familyCodes: string[];
 }
 
 export class UserEntity extends BaseMongoObject {
@@ -30,6 +38,7 @@ export class UserEntity extends BaseMongoObject {
 	public lastSessionAt?: Date;
 	public accessToken?: string;
 	public kdos?: Kdo[];
+	public familyCodes: string[];
 }
 
 export class UserListItem extends BaseMongoObject {
@@ -39,6 +48,7 @@ export class UserListItem extends BaseMongoObject {
 	public lastName: string;
 	public lastSessionAt?: Date;
 	public kdosCount?: number;
+	public familyCodes: string[];
 }
 
 export class PasswordResetRequest {

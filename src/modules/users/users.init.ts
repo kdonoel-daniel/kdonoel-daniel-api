@@ -14,6 +14,7 @@ export default async function (logger: N9Log): Promise<void> {
 			firstName: 'Admin',
 			lastName: 'Admin',
 			password: await UsersUtils.HASH_PASSWORD('azerty123'),
+			familyCodes: ['Daniel', 'Chaboud'],
 		});
 
 		await usersCollection.insertOne({
@@ -21,6 +22,7 @@ export default async function (logger: N9Log): Promise<void> {
 			firstName: 'User2',
 			lastName: 'Last Name',
 			password: await UsersUtils.HASH_PASSWORD('azerty123'),
+			familyCodes: ['Daniel'],
 		});
 
 		logger.info('User init OK');

@@ -20,4 +20,5 @@ export interface TokenContent {
 	email: string;
 	firstName: string;
 	lastName: string;
+	familyCodes: string[];
 }

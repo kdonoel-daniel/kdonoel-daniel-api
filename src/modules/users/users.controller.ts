@@ -9,6 +9,7 @@ import {
 	Param,
 	Post,
 	Put,
+	QueryParam,
 } from 'n9-node-routing';
 import { Service } from 'typedi';
 import { Session, TokenContent } from '../sessions/sessions.models';
@@ -119,9 +120,20 @@ export class UsersController {
 
 	@Get()
 	@Authorized()
-	public async getUsers(): Promise<UserListItem[]> {
+	public async getUsers(
+		@CurrentUser({ required: true }) user: TokenContent,
+		@QueryParam('family-code', { required: true }) familyCode: string,
+	): Promise<UserListItem[]> {
+		if (!user.familyCodes?.includes(familyCode)) {
+			throw new N9Error('wrong-family', 400, { familyCode });
+		}
 		const users: UserEntity[] = await (
-			await this.usersService.find({}, { password: 0, historic: 0 })
+			await this.usersService.find(
+				{
+					familyCodes: familyCode,
+				},
+				{ password: 0, historic: 0 },
+			)
 		).toArray();
 
 		return users.map((u): UserListItem => {
@@ -133,6 +145,7 @@ export class UsersController {
 				kdosCount: u.kdos ? u.kdos.length : 0,
 				objectInfos: u.objectInfos,
 				lastSessionAt: u.lastSessionAt,
+				familyCodes: undefined,
 			};
 		});
 	}
