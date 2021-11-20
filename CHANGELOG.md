@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/neo9/n9-node-microservice-skeleton/compare/1.1.1...1.2.0) (2021-11-20)
+
+
+### families
+
+* Add families to users ([d872179](https://github.com/neo9/n9-node-microservice-skeleton/commit/d87217973240ebd9202848ba025f8463e305c2e2))
+
 ## [1.1.1](https://github.com/neo9/n9-node-microservice-skeleton/compare/1.1.0...1.1.1) (2021-11-17)
 
 
