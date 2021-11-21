@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/neo9/n9-node-microservice-skeleton/compare/1.2.2...1.3.0) (2021-11-21)
+
+
+### kdos
+
+* Add surprises ([c203d54](https://github.com/neo9/n9-node-microservice-skeleton/commit/c203d547c96547a084f38eabdf9c3e40373af7ec))
+
 ## [1.2.2](https://github.com/neo9/n9-node-microservice-skeleton/compare/1.2.1...1.2.2) (2021-11-20)
 
 
