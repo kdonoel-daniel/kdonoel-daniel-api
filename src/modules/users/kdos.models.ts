@@ -1,4 +1,5 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean } from 'n9-node-routing';
 
 export enum KdoState {
 	'FREE' = 'free',
@@ -17,6 +18,13 @@ export class KdoStatus {
 }
 
 export class Kdo {
+	public title: string;
+	public description?: string;
+	public status?: KdoStatus;
+	public isSurprise?: boolean;
+}
+
+export class KdoRequestCreate {
 	@IsNotEmpty()
 	public title: string;
 
@@ -24,11 +32,11 @@ export class Kdo {
 	@IsOptional()
 	public description?: string;
 
-	@ValidateNested()
-	public status?: KdoStatus;
+	@IsBoolean()
+	public isSurprise?: boolean;
 }
 
-export class KdoRequestCreate {
+export class KdoRequestUpdate {
 	@IsNotEmpty()
 	public title: string;
 

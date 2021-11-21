@@ -4,7 +4,7 @@ import { Cursor, FilterQuery } from 'mongodb';
 import { Service } from 'n9-node-routing';
 import { TokenContent } from '../sessions/sessions.models';
 import { StatusRequest as StatusRequestUpdate } from './kdos-status-request.models';
-import { Kdo, KdoState } from './kdos.models';
+import { Kdo, KdoRequestUpdate, KdoState } from './kdos.models';
 import { PasswordInitRequest, UserEntity, UserListItem } from './users.models';
 import { UsersUtils } from './users.utils';
 
@@ -79,20 +79,19 @@ export class UsersService {
 	}
 
 	public async editKdo(
-		kdo: Kdo,
+		kdoRequestUpdate: KdoRequestUpdate,
 		userId: string,
 		index: number,
 		editor: TokenContent,
 	): Promise<void> {
-		const userToUpate = await this.getById(userId);
+		const userToUpdate = await this.getById(userId);
 
-		userToUpate.kdos[index] = {
-			...userToUpate.kdos[index],
-			...kdo,
-			status: userToUpate.kdos[index].status,
+		userToUpdate.kdos[index] = {
+			...userToUpdate.kdos[index],
+			...kdoRequestUpdate,
 		};
 
-		await this.updateById(userId, userToUpate, editor.userId);
+		await this.updateById(userId, userToUpdate, editor.userId);
 	}
 
 	public async setKdoStatus(

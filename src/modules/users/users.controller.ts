@@ -14,7 +14,7 @@ import {
 import { Service } from 'typedi';
 import { Session, TokenContent } from '../sessions/sessions.models';
 import { StatusRequest } from './kdos-status-request.models';
-import { Kdo, KdoRequestCreate } from './kdos.models';
+import { KdoRequestCreate, KdoRequestUpdate } from './kdos.models';
 import {
 	PasswordInitRequest,
 	PasswordResetRequest,
@@ -68,7 +68,7 @@ export class UsersController {
 	 * Get a user by its ID
 	 *
 	 * @param userId ID Mongo
-	 * @param user session User
+	 * @param tokenContent session User
 	 * @returns {Promise<UserEntity>}
 	 * Sample :
 	 * <pre><code>
@@ -84,14 +84,18 @@ export class UsersController {
 	@Get('/:id([0-9a-f]{24})')
 	@Authorized()
 	public async getUserById(
-		@CurrentUser({ required: true }) user: TokenContent,
+		@CurrentUser({ required: true }) tokenContent: TokenContent,
 		@Param('id') userId: string,
 	): Promise<UserEntity> {
 		// Check if user exists
-		const userRequested = await this.usersService.getById(userId, user.userId);
+		const userRequested = await this.usersService.getById(userId, tokenContent.userId);
 		if (!userRequested) {
 			throw new N9Error('user-not-found', 404);
 		}
+		const isItself = userId === tokenContent.userId;
+
+		userRequested.kdos = userRequested.kdos?.filter((k) => (isItself ? !k.isSurprise : true));
+
 		// Send back the user
 		return _.omit(userRequested, 'password') as any;
 	}
@@ -110,7 +114,7 @@ export class UsersController {
 	@Authorized()
 	public async editKdo(
 		@CurrentUser({ required: true }) user: TokenContent,
-		@Body() kdo: Kdo,
+		@Body() kdo: KdoRequestUpdate,
 		@Param('index') index: number,
 		@Param('userId') userId: string,
 	): Promise<UserEntity> {
@@ -121,10 +125,10 @@ export class UsersController {
 	@Get()
 	@Authorized()
 	public async getUsers(
-		@CurrentUser({ required: true }) user: TokenContent,
+		@CurrentUser({ required: true }) tokenContent: TokenContent,
 		@QueryParam('family-code', { required: true }) familyCode: string,
 	): Promise<UserListItem[]> {
-		const fullUser = await this.usersService.getById(user.userId, null);
+		const fullUser = await this.usersService.getById(tokenContent.userId, null);
 		if (!fullUser.familyCodes?.includes(familyCode)) {
 			throw new N9Error('wrong-family', 400, { familyCode });
 		}
@@ -138,12 +142,14 @@ export class UsersController {
 		).toArray();
 
 		return users.map((u): UserListItem => {
+			const isItself = u._id === tokenContent.userId;
+
 			return {
 				_id: u._id,
 				email: u.email,
 				firstName: u.firstName,
 				lastName: u.lastName,
-				kdosCount: u.kdos ? u.kdos.length : 0,
+				kdosCount: u.kdos ? u.kdos.filter((k) => (isItself ? !k.isSurprise : true)).length : 0,
 				objectInfos: u.objectInfos,
 				lastSessionAt: u.lastSessionAt,
 				familyCodes: undefined,
