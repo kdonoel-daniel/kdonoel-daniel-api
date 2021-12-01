@@ -38,6 +38,13 @@ export class UsersService {
 		return user;
 	}
 
+	public async existsById(userId: string): Promise<void> {
+		const user = await this.mongoClient.existsById(userId);
+		if (!user) {
+			throw new N9Error('user-not-found', 404, { id: userId });
+		}
+	}
+
 	public async getByEmail(email: string, projection?: object): Promise<UserEntity> {
 		return await this.mongoClient.findOneByKey(email, 'email', projection);
 	}

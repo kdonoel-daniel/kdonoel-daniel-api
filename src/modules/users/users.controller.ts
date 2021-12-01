@@ -92,6 +92,7 @@ export class UsersController {
 		if (!userRequested) {
 			throw new N9Error('user-not-found', 404);
 		}
+		await this.usersService.existsById(tokenContent.userId);
 		const isItself = userId === tokenContent.userId;
 
 		userRequested.kdos = userRequested.kdos?.filter((k) => (isItself ? !k.isSurprise : true));
@@ -103,23 +104,25 @@ export class UsersController {
 	@Post('/:userId([0-9a-f]{24})/kdos')
 	@Authorized()
 	public async addKdoToUser(
-		@CurrentUser({ required: true }) user: TokenContent,
+		@CurrentUser({ required: true }) tokenContent: TokenContent,
 		@Body() kdo: KdoRequestCreate,
 		@Param('userId') userId: string,
 	): Promise<UserEntity> {
-		return await this.usersService.addKdo(kdo, userId, user);
+		await this.usersService.existsById(tokenContent.userId);
+		return await this.usersService.addKdo(kdo, userId, tokenContent);
 	}
 
 	@Put('/:userId([0-9a-f]{24})/kdos/:index')
 	@Authorized()
 	public async editKdo(
-		@CurrentUser({ required: true }) user: TokenContent,
+		@CurrentUser({ required: true }) tokenContent: TokenContent,
 		@Body() kdo: KdoRequestUpdate,
 		@Param('index') index: number,
 		@Param('userId') userId: string,
 	): Promise<UserEntity> {
-		await this.usersService.editKdo(kdo, userId, index, user);
-		return await this.usersService.getById(userId, user.userId);
+		await this.usersService.existsById(tokenContent.userId);
+		await this.usersService.editKdo(kdo, userId, index, tokenContent);
+		return await this.usersService.getById(userId, tokenContent.userId);
 	}
 
 	@Get()
@@ -176,16 +179,18 @@ export class UsersController {
 	@Put('/:userId([0-9a-f]{24})/kdos/:index([0-9]+)/status')
 	@Authorized()
 	public async setKdoStatus(
-		@CurrentUser({ required: true }) user: TokenContent,
+		@CurrentUser({ required: true }) tokenContent: TokenContent,
 		@Param('userId') userId: string,
 		@Param('index') index: number,
 		@Body() status: StatusRequest,
 	): Promise<UserEntity> {
-		if (userId === user.userId) {
+		if (userId === tokenContent.userId) {
 			throw new N9Error('user-not-valid', 401);
 		}
-		await this.usersService.setKdoStatus(userId, index, status, user);
-		return this.usersService.getById(userId, user.userId);
+		await this.usersService.existsById(tokenContent.userId);
+
+		await this.usersService.setKdoStatus(userId, index, status, tokenContent);
+		return this.usersService.getById(userId, tokenContent.userId);
 	}
 
 	@Post('/init/password')
