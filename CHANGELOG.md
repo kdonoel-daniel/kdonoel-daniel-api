@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/neo9/n9-node-microservice-skeleton/compare/1.3.1...1.3.2) (2021-12-04)
+
+
+### kdos
+
+* Fix kdos status update after previous update ([b8d1e52](https://github.com/neo9/n9-node-microservice-skeleton/commit/b8d1e52346b92094463193e245d707f889490739))
+
 ## [1.3.1](https://github.com/neo9/n9-node-microservice-skeleton/compare/1.3.0...1.3.1) (2021-12-01)
 
 
