@@ -110,6 +110,7 @@ export class UsersService {
 		const userToUpate = await this.getById(userId);
 
 		if (
+			userToUpate.kdos[index].status?.code !== KdoState.FREE &&
 			userToUpate.kdos[index].status?.userId &&
 			userToUpate.kdos[index].status?.userId !== editor.userId
 		) {
