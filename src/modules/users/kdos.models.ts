@@ -1,5 +1,4 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { IsBoolean } from 'n9-node-routing';
+import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'n9-node-routing';
 
 export enum KdoState {
 	'FREE' = 'free',

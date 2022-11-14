@@ -1,4 +1,3 @@
-import { N9Error } from '@neo9/n9-node-utils';
 import * as _ from 'lodash';
 import {
 	Authorized,
@@ -6,15 +5,18 @@ import {
 	CurrentUser,
 	Get,
 	JsonController,
+	N9Error,
 	Param,
 	Post,
 	Put,
 	QueryParam,
+	Service,
 } from 'n9-node-routing';
-import { Service } from 'typedi';
+
 import { Session, TokenContent } from '../sessions/sessions.models';
-import { StatusRequest } from './kdos-status-request.models';
+import { SessionsService } from '../sessions/sessions.service';
 import { KdoRequestCreate, KdoRequestUpdate } from './kdos.models';
+import { StatusRequest } from './kdos-status-request.models';
 import {
 	PasswordInitRequest,
 	PasswordResetRequest,
@@ -22,8 +24,6 @@ import {
 	UserListItem,
 	UserRequestCreate,
 } from './users.models';
-
-import { SessionsService } from '../sessions/sessions.service';
 import { UsersService } from './users.service';
 import { UsersUtils } from './users.utils';
 
@@ -67,8 +67,8 @@ export class UsersController {
 	/**
 	 * Get a user by its ID
 	 *
-	 * @param userId ID Mongo
 	 * @param tokenContent session User
+	 * @param userId ID Mongo
 	 * @returns {Promise<UserEntity>}
 	 * Sample :
 	 * <pre><code>
@@ -135,14 +135,14 @@ export class UsersController {
 		if (!fullUser.familyCodes?.includes(familyCode)) {
 			throw new N9Error('wrong-family', 400, { familyCode });
 		}
-		const users: UserEntity[] = await (
-			await this.usersService.find(
+		const users: UserEntity[] = await this.usersService
+			.find(
 				{
 					familyCodes: familyCode,
 				},
 				{ password: 0, historic: 0 },
 			)
-		).toArray();
+			.toArray();
 
 		return users.map((u): UserListItem => {
 			const isItself = u._id === tokenContent.userId;

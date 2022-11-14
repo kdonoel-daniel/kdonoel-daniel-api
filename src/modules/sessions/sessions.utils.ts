@@ -1,7 +1,8 @@
-import { N9Log } from '@neo9/n9-node-log';
 import { N9Error } from '@neo9/n9-node-utils';
-import { Express, NextFunction, Request, Response } from 'express';
+import type { Express, NextFunction, Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
+import { N9Log } from 'n9-node-routing';
+
 import { Conf } from '../../conf/index.models';
 import { TokenContent } from './sessions.models';
 
@@ -10,7 +11,7 @@ export class SessionsUtils {
 		try {
 			return !!jwt.verify(token, secretKey);
 		} catch (e) {
-			(global.log as N9Log).error('Error while decoding JWT ', e);
+			global.log.error('Error while decoding JWT ', e);
 			throw new N9Error((e.message || 'unknown-error').replace(/ /g, '-'), 401);
 		}
 	}
@@ -24,7 +25,7 @@ export class SessionsUtils {
 
 	public static SET_JWT_LOADER(conf: Conf, log: N9Log, app: Express): void {
 		if (conf.jwt) {
-			app.use(async (req: Request, res: Response, next: NextFunction) => {
+			app.use((req: Request, res: Response, next: NextFunction): void => {
 				try {
 					const token = req.headers['x-jwt-token'] as string;
 					if (token && typeof token === 'string') {

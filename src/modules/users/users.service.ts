@@ -1,10 +1,10 @@
 import { MongoClient, StringMap } from '@neo9/n9-mongo-client';
-import { N9Error } from '@neo9/n9-node-utils';
-import { Cursor, FilterQuery } from 'mongodb';
-import { Service } from 'n9-node-routing';
+import type { Cursor, FilterQuery } from 'mongodb';
+import { N9Error, Service } from 'n9-node-routing';
+
 import { TokenContent } from '../sessions/sessions.models';
-import { StatusRequest as StatusRequestUpdate } from './kdos-status-request.models';
 import { Kdo, KdoRequestUpdate, KdoState } from './kdos.models';
+import { StatusRequest as StatusRequestUpdate } from './kdos-status-request.models';
 import { PasswordInitRequest, UserEntity, UserListItem } from './users.models';
 import { UsersUtils } from './users.utils';
 
@@ -49,11 +49,8 @@ export class UsersService {
 		return await this.mongoClient.findOneByKey(email, 'email', projection);
 	}
 
-	public async find(
-		query: FilterQuery<UserEntity>,
-		projection: object = {},
-	): Promise<Cursor<UserEntity>> {
-		return await this.mongoClient.find(query, 0, 0, { firstName: 1, lastName: 1 }, projection);
+	public find(query: FilterQuery<UserEntity>, projection: object = {}): Cursor<UserEntity> {
+		return this.mongoClient.find(query, 0, 0, { firstName: 1, lastName: 1 }, projection);
 	}
 
 	public async setPassword(userId: string, pwd: string, editor: TokenContent): Promise<void> {

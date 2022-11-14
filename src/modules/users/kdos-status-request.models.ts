@@ -1,4 +1,5 @@
-import { IsEnum, IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty } from 'n9-node-routing';
+
 import { KdoState } from './kdos.models';
 
 export class StatusRequest {

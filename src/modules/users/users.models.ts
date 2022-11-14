@@ -1,6 +1,16 @@
 import { BaseMongoObject } from '@neo9/n9-mongo-client';
-import { IsEmail, IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
-import { ArrayMinSize, Exclude, Expose, IsArray } from 'n9-node-routing';
+import {
+	ArrayMinSize,
+	Exclude,
+	Expose,
+	IsArray,
+	IsEmail,
+	IsNotEmpty,
+	IsString,
+	Matches,
+	MinLength,
+} from 'n9-node-routing';
+
 import { Kdo } from './kdos.models';
 
 @Exclude()
@@ -53,11 +63,11 @@ export class UserListItem extends BaseMongoObject {
 
 export class PasswordResetRequest {
 	@MinLength(8)
-	@Matches(/^(?=.*[A-Za-z])(?=.*[0-9]).{8,}$/i)
+	@Matches(/^(?=.*[a-z])(?=.*\d).{8,}$/i)
 	public oldPassword: string;
 
 	@MinLength(8)
-	@Matches(/^(?=.*[A-Za-z])(?=.*[0-9]).{8,}$/i)
+	@Matches(/^(?=.*[a-z])(?=.*\d).{8,}$/i)
 	public newPassword: string;
 }
 
@@ -67,6 +77,6 @@ export class PasswordInitRequest {
 	public email: string;
 
 	@MinLength(8)
-	@Matches(/^(?=.*[A-Za-z])(?=.*[0-9]).{8,}$/i)
+	@Matches(/^(?=.*[a-z])(?=.*\d).{8,}$/i)
 	public pwd: string;
 }

@@ -1,9 +1,10 @@
-import { N9Log } from '@neo9/n9-node-log';
+import { N9Log } from 'n9-node-routing';
+
 import { UsersUtils } from './users.utils';
 
 const usersCollection = global.db.collection('users');
 
-export default async function (logger: N9Log): Promise<void> {
+export default async (logger: N9Log): Promise<void> => {
 	const usersCount = await usersCollection.count({});
 
 	if (usersCount === 0) {
@@ -28,4 +29,4 @@ export default async function (logger: N9Log): Promise<void> {
 		logger.info('User init OK');
 	}
 	await usersCollection.createIndex({ email: 1 }, { unique: true });
-}
+};

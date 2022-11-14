@@ -1,4 +1,4 @@
-# user management with routing-controllers
+# kdos ideas for Christmas API
 
 1. Install all dependencies:
 
@@ -12,4 +12,6 @@
 
    `http://localhost:3000/`
 
-This project targets ES6.
+This project targets ES6, node 18+.
+
+To get a mongodb locally : `docker run --name mongo-kdos -p 27017:27017 mongo:5.0.13-focal`

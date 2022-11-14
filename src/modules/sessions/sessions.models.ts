@@ -1,4 +1,5 @@
-import { IsEmail, Matches, MinLength } from 'class-validator';
+import { IsEmail, Matches, MinLength } from 'n9-node-routing';
+
 import { UserEntity } from '../users/users.models';
 
 export class CreateSessionBody {
@@ -6,7 +7,7 @@ export class CreateSessionBody {
 	public email: string;
 
 	@MinLength(8)
-	@Matches(/^(?=.*[A-Za-z])(?=.*[0-9]).{8,}$/i)
+	@Matches(/^(?=.*[a-z])(?=.*\d).{8,}$/i)
 	public password?: string;
 }
 

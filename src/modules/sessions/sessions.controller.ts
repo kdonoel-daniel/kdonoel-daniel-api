@@ -1,7 +1,6 @@
-import { N9Log } from '@neo9/n9-node-log';
 import { N9Error } from '@neo9/n9-node-utils';
-import { Body, Inject, JsonController, Post } from 'n9-node-routing';
-import { Service } from 'typedi';
+import { Body, Inject, JsonController, N9Log, Post, Service } from 'n9-node-routing';
+
 import { UsersService } from '../users/users.service';
 import { UsersUtils } from '../users/users.utils';
 import { CreateSessionBody, Session } from './sessions.models';

@@ -1,0 +1,24 @@
+version: '3.4'
+services:
+  kdos-api:
+    build:
+      context: ./
+      target: builder
+    image: kdos-api
+    command: yarn run dev
+    volumes:
+      - ./src:/home/app/src
+      - ./package.json:/home/app/package.json
+      - ./nodemon.json:/home/app/nodemon.json
+    ports:
+      - 6686:6686 # app port
+      - 9101:9101 # metrics port
+      - 10010:10010 # debug port
+    networks:
+      - kdos
+    environment:
+      DEBUG: n9-node-conf # usefull to debug conf loading
+
+networks:
+  kdos:
+    external: true

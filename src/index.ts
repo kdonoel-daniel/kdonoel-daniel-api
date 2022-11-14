@@ -1,22 +1,22 @@
-/* tslint:disable:ordered-imports */
+// eslint-disable-next-line import/no-extraneous-dependencies
 import 'reflect-metadata';
+// Add source map supports
+import 'source-map-support/register';
 
 import { MongoUtils } from '@neo9/n9-mongo-client';
 import n9NodeConf from '@neo9/n9-node-conf';
-// Dependencies
-import n9NodeLog from '@neo9/n9-node-log';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import * as bodyParser from 'body-parser';
-import { Express } from 'express';
+import type { Express } from 'express';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import fastSafeStringify from 'fast-safe-stringify';
 import { Server } from 'http';
-import { Db } from 'mongodb';
-import n9NodeRouting, { N9NodeRouting, Container, Action } from 'n9-node-routing';
+import type { Db } from 'mongodb';
+// Dependencies
+import n9NodeRouting, { Container, N9Log, N9NodeRouting } from 'n9-node-routing';
 import { join } from 'path';
-// Add source map supports
-// tslint:disable:no-import-side-effect
-import 'source-map-support/register';
+
 import { Conf } from './conf/index.models';
-import { UsersUtils } from './modules/users/users.utils';
 import { SessionsUtils } from './modules/sessions/sessions.utils';
 
 // Start method
@@ -24,7 +24,7 @@ async function start(
 	confOverride: Partial<Conf> = {},
 ): Promise<{ server: Server; db: Db; conf: Conf }> {
 	// Load project conf & set as global
-	const conf = (global.conf = n9NodeConf({
+	const conf = n9NodeConf({
 		path: join(__dirname, 'conf'),
 		extendConfig: {
 			key: 'starterApi',
@@ -35,9 +35,11 @@ async function start(
 		override: {
 			value: confOverride,
 		},
-	}) as Conf);
+	}) as Conf;
+	global.conf = conf;
 
-	const log = (global.log = n9NodeLog(conf.name, conf.log));
+	const log = new N9Log(conf.name, conf.log);
+	global.log = log;
 	// Load loaded configuration
 	log.info(`Conf loaded: ${conf.env}`);
 
@@ -71,7 +73,7 @@ async function start(
 		path: join(__dirname, 'modules'),
 		http: {
 			...conf.http,
-			beforeRoutingControllerLaunchHook: async (app2: Express) => {
+			beforeRoutingControllerLaunchHook: (app2: Express) => {
 				log.info('Add JWT decoder');
 				SessionsUtils.SET_JWT_LOADER(conf, log, app2);
 
