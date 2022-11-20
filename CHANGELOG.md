@@ -1,3 +1,12 @@
+
+
+# [2.0.0-rc.0](https://github.com/neo9/n9-node-microservice-skeleton/compare/1.3.2...2.0.0-rc.0) (2022-11-20)
+
+
+### yarn
+
+* Upgrade all dependencies ([eb659f2](https://github.com/neo9/n9-node-microservice-skeleton/commit/eb659f23537af4a6bde26aa19c3be9e9a659450e))
+
 ## [1.3.2](https://github.com/neo9/n9-node-microservice-skeleton/compare/1.3.1...1.3.2) (2021-12-04)
 
 
