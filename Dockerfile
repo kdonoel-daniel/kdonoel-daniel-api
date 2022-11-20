@@ -35,7 +35,6 @@ RUN yarn install --offline \
   && rm -rf test \
   && rm yarn.lock \
   && find . -type f -name "*.d.ts" -exec rm {} \; \
-  && mv src dist \
   && rm -rf ${YARN_CACHE_PATH}
 
-CMD ["node", "dist/index.js"]
+CMD ["node", "index.js"]
