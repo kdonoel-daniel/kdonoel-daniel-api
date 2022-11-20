@@ -19,7 +19,9 @@ export class UsersService {
 	}
 
 	public async create(user: UserEntity): Promise<UserEntity> {
-		user.password = await UsersUtils.HASH_PASSWORD(user.password);
+		if(user.password) {
+			user.password = await UsersUtils.HASH_PASSWORD(user.password);
+		}
 		return await this.mongoClient.insertOne(user, 'none');
 	}
 

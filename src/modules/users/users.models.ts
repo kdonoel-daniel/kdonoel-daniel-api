@@ -5,7 +5,7 @@ import {
 	Expose,
 	IsArray,
 	IsEmail,
-	IsNotEmpty,
+	IsNotEmpty, IsOptional,
 	IsString,
 	Matches,
 	MinLength,
@@ -37,6 +37,11 @@ export class UserRequestCreate {
 	@IsNotEmpty()
 	@Expose()
 	public familyCodes: string[];
+
+	@IsOptional()
+	@MinLength(8)
+	@Matches(/^(?=.*[a-z])(?=.*\d).{8,}$/i)
+	public password?: string;
 }
 
 export class UserEntity extends BaseMongoObject {
